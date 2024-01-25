@@ -17,7 +17,6 @@ import {
 import {MarkerWithInfowindow} from './marker-with-infowindow';
 
 
-const API_KEY = 'AIzaSyDQJYjiOjkl71sqPUN_YCivM8IgjwcGv7k'//process.env.VITE_REACT_APP_GOOGLE_MAPS_CLIENT_ID
 
 import mapStyle from './mapStyle.ts';
 
