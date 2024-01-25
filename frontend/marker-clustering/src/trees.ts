@@ -11,7 +11,7 @@ type Tree = {
 
 const trees: RawTree[] = [
 
-['East Bark Haven', 34.0129, -118.4158],
+['East Bark Haven', 34.054, -118.4465],
 ['Westside Paws Park', 34.0922, -118.2506],
 
 

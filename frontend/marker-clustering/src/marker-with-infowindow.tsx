@@ -6,7 +6,7 @@ import {
 } from '@vis.gl/react-google-maps';
 
 export const MarkerWithInfowindow = ({toggleStats}) => {
-  const [infowindowOpen, setInfowindowOpen] = useState(true);
+  const [infowindowOpen, setInfowindowOpen] = useState(false);
   const [markerRef, marker] = useAdvancedMarkerRef();
 
   return (
@@ -14,7 +14,7 @@ export const MarkerWithInfowindow = ({toggleStats}) => {
       <AdvancedMarker
         ref={markerRef}
         onClick={() => setInfowindowOpen(true)}
-        position={{lat: 34.0129, lng: -118.4158}}
+        position={{lat: 34.054, lng: -118.4465}}
         title={'Live Bark Chart'}
       ><span className="tree">🐶</span></AdvancedMarker>
       {infowindowOpen && (
@@ -22,7 +22,7 @@ export const MarkerWithInfowindow = ({toggleStats}) => {
           anchor={marker}
           maxWidth={200}
           onCloseClick={() => setInfowindowOpen(false)}>
-            <code style={{whiteSpace: 'nowrap'}}>Westwood Dog Park</code>{' '}
+            <code style={{color: 'black', whiteSpace: 'nowrap'}}>Westwoof Dog Park</code>{' '}
             <div
                        style={{ cursor: 'pointer', color: 'blue' }}
                        onClick={toggleStats}
@@ -35,8 +35,8 @@ export const MarkerWithInfowindow = ({toggleStats}) => {
                               >
                                 Check Out
                               </div>
-          <code style={{whiteSpace: 'nowrap'}}>Big Dogs: 10 {' '}</code>{' '}
-          <code style={{whiteSpace: 'nowrap'}}>Small Dogs: 5{' '}</code>{' '}
+          <code style={{color: 'black', whiteSpace: 'nowrap'}}>Big Dogs: 10 {' '}</code>{' '}
+          <code style={{color: 'black', whiteSpace: 'nowrap'}}>Small Dogs: 5{' '}</code>{' '}
           <div
                      style={{ cursor: 'pointer', color: 'blue' }}
                      onClick={toggleStats}
@@ -47,7 +47,7 @@ export const MarkerWithInfowindow = ({toggleStats}) => {
                               style={{ cursor: 'pointer', color: 'blue' }}
                               onClick={toggleStats}
                             >
-                              Chat
+                               Chat
                             </div>
                    <div
                               style={{ cursor: 'pointer', color: 'blue' }}
