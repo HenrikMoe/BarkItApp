@@ -86,16 +86,55 @@ const App: React.FC = () =>{
     };
   }, []); // Empty dependency array ensures that this effect runs only once on component mount
 
+  // Assuming you have state variables like this in your component
+  const [bigParkData, setBigParkData] = useState([]);
+  const [smallParkData, setSmallParkData] = useState([]);
 
-  const toggleStats = (park) => {
-    setShowStats(true);
-    setShowCheckIn(false);
-    setLivePark(park)
-    setShowDogStats(false);
-    setShowChat(false)
-    setShowCalendar(false)
-    setShowCheckOut(false)
+  const toggleStats = async (park) => {
+    try {
+      setShowStats(true);
+      setShowCheckIn(false);
+      setLivePark(park);
+      setShowDogStats(false);
+      setShowChat(false);
+      setShowCalendar(false);
+      setShowCheckOut(false);
+
+      // Make a call to update park stats
+      const response = await fetch('http://localhost:3029/updateParkStats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          parkName: park,
+          newStats: {
+            // Include the new stats structure here
+            // Modify based on your schema
+            // Example: newStatField: 'new value',
+          },
+          // Include other fields as needed
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to update park stats:', response.statusText);
+        // Handle the error here if needed
+      } else {
+        const data = await response.json();
+
+        // Update the state with the received data
+        setBigParkData(data.activeDogsBigPark || []);
+        setSmallParkData(data.activeDogsSmallPark || []);
+      }
+    } catch (error) {
+      console.error('Error during toggleStats:', error);
+      // Handle the error here if needed
+    }
   };
+
+
+
 
   const [livePark, setLivePark] = useState('')
 
@@ -286,6 +325,31 @@ const App: React.FC = () =>{
    }
  };
 
+ const checkInPark = async (dog, side) => {
+  try {
+    console.log(dog)
+
+    const response = await fetch('http://localhost:3029/checkin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ dog, park: 'westwoof', side: side /* add other fields if needed */ }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data.message);
+      // Perform any additional actions on successful check-in
+    } else {
+      console.error('Check-in failed:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error during check-in:', error);
+  }
+};
+
+
  const [userDogs, setUserDogs] = useState<Dog[]>([]);
 
 
@@ -371,25 +435,23 @@ return (
 
 
 
-      {showStats && (
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <div
-          style={{ cursor: 'pointer', textDecoration: selectedMenu === 'breeds' ? 'underline' : 'none' }}
-          onClick={() => handleMenuClick('na')}
-        >
-          Live Dogs
+    {showStats && (
+      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
+          <div
+            style={{ cursor: 'pointer', textDecoration: selectedMenu === 'breeds' ? 'underline' : 'none' }}
+            onClick={() => handleMenuClick('na')}
+          >
+            Live Dogs
+          </div>
         </div>
-
-      </div>
-          <RosterTable/>
-          {/* Your Stats Content Here */}
-
-
+        <RosterTable bigParkData={bigParkData} smallParkData={smallParkData} />
+        {/* Your Stats Content Here */}
         {/* Content based on selected menu */}
+      </div>
+    )}
 
-        </div>
-      )}
+
 
       {showCheckIn && (
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
@@ -400,7 +462,8 @@ return (
         >
         {userDogs.map((dog, index) => (
           <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
-            <h3>{dog.dogName}'s <div>Check In</div></h3>
+            <h3>{dog.dogName}'s Check In: <div onClick={() => checkInPark(dog, 'big')}>Big Park</div>
+            <div onClick={() => checkInPark(dog, 'small')}>Small Park</div></h3>
 
           </div>
         ))}
@@ -524,7 +587,7 @@ const Markers: React.FC<Props> = ({ points }) => {
   );
 };
 
-const RosterTable: React.FC = () => (
+const RosterTable: React.FC<{ bigParkData: Dog[], smallParkData: Dog[] }> = ({ bigParkData, smallParkData }) => (
   <div style={{ overflowX: 'auto' }}>
     <table style={{ width: '90%', overflowX: 'auto' }}>
       <thead>
@@ -538,10 +601,26 @@ const RosterTable: React.FC = () => (
           <th style={{ padding: '5px' }}>Age</th>
         </tr>
       </thead>
-
+      <tbody>
+        {/* Render rows based on bigParkData and smallParkData */}
+        {/* Example: */}
+        {bigParkData.map((dog) => (
+          <tr key={dog.id}>
+            <td>{dog.dogName}</td>
+            <td>{/* Dog pic */}</td>
+            <td>{dog.breed}</td>
+            <td>{dog.size}</td>
+            <td>{dog.energy}</td>
+            <td>{/* Reviews */}</td>
+            <td>{dog.age}</td>
+          </tr>
+        ))}
+        {/* Repeat for smallParkData */}
+      </tbody>
     </table>
   </div>
 );
+
 
 
 
