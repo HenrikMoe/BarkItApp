@@ -5,6 +5,7 @@ import { APIProvider, Map, useMap, AdvancedMarker } from '@vis.gl/react-google-m
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import SignUpForm from './SignUpForm'; // Adjust the path accordingly
 import SignInForm from './SignInForm'; // Adjust the path accordingly
+import Chat from './chat'; // Assuming the Chat component file is in the same directory
 
 import type { Marker } from '@googlemaps/markerclusterer';
 import trees from './trees';
@@ -501,7 +502,7 @@ const checkOutPark = async (dog, side) => {
           <ul>
             {userDogs.map((dog, index) => (
               <li key={index} >
-            {dog.dogImage} -  {dog.dogName} <button onClick={() => toggleDogStats()} style={{ color: 'grey'}}>Stats</button>  <button style={{ color: 'grey'}}  onClick={() => toggleDogEdit(dog)}>Edit</button> <button  onClick={() => toggleDogRemove(dog)} style={{ color: 'grey'}}>Remove</button>
+            {dog.dogImage}   {dog.dogName} <button onClick={() => toggleDogStats()} style={{ color: 'grey'}}>Stats</button>  <button style={{ color: 'grey'}}  onClick={() => toggleDogEdit(dog)}>Edit</button> <button  onClick={() => toggleDogRemove(dog)} style={{ color: 'grey'}}>Remove</button>
               </li>
             ))}
           </ul>
@@ -732,6 +733,11 @@ useEffect(() => {
   }
 };
 
+const handleSignOut =()=>{
+  setUserSignedIn(false);
+}
+
+
 
 
 return (
@@ -767,7 +773,7 @@ return (
 
     <div
       style={{ cursor: 'pointer', textDecoration: selectedMenu === 'energy' ? 'underline' : 'none' }}
-      onClick={() => handleMenuClick('sign out')}
+      onClick={() => handleSignOut()}
     >
       Sign Out
     </div>
@@ -854,6 +860,9 @@ return (
       </div>
     )}
 
+    {showChat &&(
+       <Chat dogParkName={livePark} />
+     )}
 
     {showHistoricalDogParks && (
       <div style={{ overflowY: 'auto', maxHeight: '300px' }}>
