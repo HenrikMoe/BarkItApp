@@ -407,7 +407,6 @@ app.post('/checkout', async (req, res) => {
 
 
 
-
 app.get('/dogparkhistory', async (req, res) => {
   console.log('hello');
   try {
@@ -429,7 +428,8 @@ app.get('/dogparkhistory', async (req, res) => {
           $match: {
             $or: [
               { 'activeDogsBigPark.dog.user.username': username },
-              { 'checkoutInfo.dog.user.username': username }
+              { 'checkoutInfo.dog.user.username': username },
+              { 'activeDogsSmallPark.dog.user.username': username },
             ],
           },
         },
@@ -438,7 +438,7 @@ app.get('/dogparkhistory', async (req, res) => {
             dogName: {
               $cond: {
                 if: { $eq: ['$activeDogsBigPark', null] },
-                then: '$checkoutInfo.dog.name',
+                then: { $ifNull: ['$checkoutInfo.dog.name', '$activeDogsSmallPark.dog.name'] },
                 else: '$activeDogsBigPark.dog.name'
               }
             },
@@ -457,7 +457,23 @@ app.get('/dogparkhistory', async (req, res) => {
                   dog: { $arrayElemAt: ['$activeDogsBigPark.dog', 0] },
                   checkinExpiration: '$activeDogsBigPark.checkinExpiration'
                 },
-                else: null
+                else: {
+                  // If there's no check-in in big park, check for small park
+                  $cond: {
+                    if: {
+                      $and: [
+                        { $ne: ['$activeDogsSmallPark', null] },
+                        { $isArray: '$activeDogsSmallPark' },
+                        { $gt: [{ $size: '$activeDogsSmallPark' }, 0] }
+                      ]
+                    },
+                    then: {
+                      dog: { $arrayElemAt: ['$activeDogsSmallPark.dog', 0] },
+                      checkinExpiration: '$activeDogsSmallPark.checkinExpiration'
+                    },
+                    else: null
+                  }
+                }
               }
             },
             checkout: {
@@ -497,7 +513,7 @@ app.get('/dogparkhistory', async (req, res) => {
     // Filter events to include only those with a check-in
     const filteredEvents = historicalDogParks.filter(({ checkin }) => checkin !== null);
 
-    console.log(filteredEvents[0].parkname);
+    console.log(historicalDogParks);
 
     res.status(200).json({ historicalDogParks: filteredEvents });
   } catch (error) {
@@ -507,6 +523,34 @@ app.get('/dogparkhistory', async (req, res) => {
 });
 
 
+
+// ... (Existing imports and code)
+
+app.post('/adddog', async (req, res) => {
+  try {
+    const { username, dogData } = req.body;
+    console.log(username, dogData )
+
+    // Find the user by username
+    const user = await client.db("barkit").collection("users").findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log(user)
+    // Add the new dog to the user's dogs array
+    user.dogs.push(dogData);
+
+    // Update the user in the database
+    await client.db("barkit").collection("users").updateOne({ username }, { $set: { dogs: user.dogs } });
+
+    res.status(201).json({ message: 'Dog added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 
 

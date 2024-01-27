@@ -100,6 +100,7 @@ const App: React.FC = () =>{
       setShowCalendar(false);
       setShowCheckOut(false);
       setShowHistoricalDogParks(false)
+      setShowAddDog(false);
 
 
       // Make a call to update park stats
@@ -152,6 +153,7 @@ const App: React.FC = () =>{
     setShowCalendar(false)
     setShowCheckOut(false)
     setShowHistoricalDogParks(false)
+    setShowAddDog(false);
 
   };
 
@@ -165,6 +167,7 @@ const App: React.FC = () =>{
     setShowChat(false)
     setShowCalendar(false)
     setShowHistoricalDogParks(false)
+    setShowAddDog(false);
 
     //run
   };
@@ -178,6 +181,7 @@ const App: React.FC = () =>{
       setShowChat(false);
       setShowCalendar(false);
       setShowCheckOut(false);
+      setShowAddDog(false);
 
       getUserHistory(username)
 
@@ -198,6 +202,8 @@ const App: React.FC = () =>{
     setLivePark(park)
     setShowDogStats(false);
     setShowStats(false)
+    setShowAddDog(false);
+
   };
 
   const [showChat, setShowChat] = useState(false);
@@ -211,6 +217,8 @@ const App: React.FC = () =>{
     setLivePark(park)
     setShowDogStats(false);
     setShowStats(false)
+    setShowAddDog(false);
+
   };
 
   const [showDogStats, setShowDogStats] = useState(false);
@@ -223,6 +231,8 @@ const App: React.FC = () =>{
       !showCalendar &&
       !showCheckOut &&
       !showCheckIn &&
+      !showHistoricalDogParks &&
+      !showAddDog &&
       !showStats
     ) {
       setShowDogStats((prevShowDogStats) => !prevShowDogStats);
@@ -236,6 +246,8 @@ const App: React.FC = () =>{
       setShowCheckOut(false)
       setShowCheckIn(false);
       setShowStats(false)
+      setShowAddDog(false);
+
     }
   };
 
@@ -441,7 +453,7 @@ const checkOutPark = async (dog, side) => {
           <ul>
             {userDogs.map((dog, index) => (
               <li key={index} >
-            {dog.dogImage} -  {dog.dogName}     <button onClick={() => toggleDogStats()} style={{ color: 'grey'}}>Stats</button>  <a style={{ color: 'grey'}}>Edit</a>
+            {dog.dogImage} -  {dog.dogName}     <button onClick={() => toggleDogStats()} style={{ color: 'grey'}}>Stats</button>  <a style={{ color: 'grey'}}>Edit</a> <a style={{ color: 'grey'}}>Remove</a>
               </li>
             ))}
           </ul>
@@ -493,12 +505,105 @@ const checkOutPark = async (dog, side) => {
 
 
 
+    const [showAddDog, setShowAddDog] = useState(false);
+
+      // ... (Existing event handlers)
+      const [dogName, setDogName] = useState('');
+      const [breed, setBreed] = useState('');
+      const [size, setSize] = useState('');
+      const [energy, setEnergy] = useState('');
+      const [age, setAge] = useState('');
+      const [dogImage, setDogImage] = useState<File | null>(null);
+
+      const handleDogNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+      setDogName(e.target.value);
+      };
+
+      const handleBreedChange = (e: ChangeEvent<HTMLInputElement>) => {
+      setBreed(e.target.value);
+      };
+
+      const handleSizeChange = (e: ChangeEvent<HTMLInputElement>) => {
+      setSize(e.target.value);
+      };
+
+      const handleEnergyChange = (e: ChangeEvent<HTMLInputElement>) => {
+      setEnergy(e.target.value);
+      };
+
+      const handleAgeChange = (e: ChangeEvent<HTMLInputElement>) => {
+      setAge(e.target.value);
+      };
+
+      const handleDogImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+        setDogImage(e.target.files[0]);
+      }
+      };
+
+
+      const handleCancelAddDogClick = () => {
+        setShowAddDog(false);
+      };
+
+      const toggleAddDog = () => {
+        setShowAddDog(true);
+        setShowDogStats(false);
+        setShowHistoricalDogParks(false)
+        setShowChat(false)
+        setLivePark(null)
+        setShowCalendar(false)
+        setShowCheckOut(false)
+        setShowCheckIn(false);
+        setShowStats(false)
+      }
+
+      const handleAddDogClick = async () => {
+      try {
+
+        const requestData = {
+    username,
+    dogData: {
+      dogName,
+      breed,
+      size,
+      energy,
+      age,
+      dogImage, // If dogImage is undefined, set it to null
+    },
+    // Add other fields if needed
+  };
+
+  console.log(requestData);
+
+  const response = await fetch('http://localhost:3029/adddog', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestData),
+  });
+
+        if (response.ok) {
+          // Call the onAddDog callback if the dog is added successfully
+          //onAddDog();
+          setShowAddDog(false)
+          setShowHistoricalDogParks(true)
+          fetchUserDogs(username)
+        } else {
+          console.error('Failed to add dog:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error during add dog request:', error);
+      }
+};
+
 return (
 
   <div style={{ width: '90%', height: '300px', margin: '0 auto' }}>
   {userSignedIn ? (
     <>
-    <h2 style={{ textAlign: 'left', marginBottom: '0px' }}>Park Bark It </h2>
+    <h2 style={{ textAlign: 'left', marginBottom: '0px' }}>Bark It </h2>
     <h4 style={{ textAlign: 'right', marginBottom: '00px' }}>{username}</h4>
     {renderUserDogs()}
     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
@@ -510,7 +615,7 @@ return (
     </div>
     <div
       style={{ cursor: 'pointer', textDecoration: selectedMenu === 'sizes' ? 'underline' : 'none' }}
-      onClick={() => handleMenuClick('edit')}
+      onClick={() => toggleAddDog()}
     >
       Add Dog
     </div>
@@ -588,6 +693,41 @@ return (
       </div>
     )}
 
+  {showAddDog && (<div>
+      <h2>Add Dog</h2>
+      <label>
+        Dog Name:
+        <input type="text" value={dogName} onChange={handleDogNameChange} style={{ width: '100%' }} />
+      </label>
+      <br />
+      <label>
+        Breed:
+        <input type="text" value={breed} onChange={handleBreedChange} style={{ width: '100%' }} />
+      </label>
+      <br />
+      <label>
+        Size:
+        <input type="text" value={size} onChange={handleSizeChange} style={{ width: '100%' }} />
+      </label>
+      <br />
+      <label>
+        Energy:
+        <input type="text" value={energy} onChange={handleEnergyChange} style={{ width: '100%' }} />
+      </label>
+      <br />
+      <label>
+        Age:
+        <input type="text" value={age} onChange={handleAgeChange} style={{ width: '100%' }} />
+      </label>
+      <br />
+      <label>
+        Dog Image:
+        <input type="file" accept="image/*" onChange={handleDogImageChange} style={{ width: '100%' }} />
+      </label>
+      <br />
+      <button type="button" onClick={handleAddDogClick}>Add Dog</button>
+    </div>
+      )}
 
       {showCheckIn && (
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
@@ -681,7 +821,11 @@ return (
       </>
     ):(
       <>
-        <h2 style={{ textAlign: 'left', marginBottom: '0px' }}> Park Bark It </h2>
+        <h2 style={{ textAlign: 'left', marginBottom: '0px' }}> Bark It </h2>
+        <h4 style={{ textAlign: 'left', marginBottom: '0px' }}> Welcome to Bark It</h4>
+        <h4 style={{ textAlign: 'left', marginBottom: '0px' }}> YikYak meets Surfline for dog parks.</h4>
+
+
         <SignInForm onSignIn={handleSignIn} />
         <SignUpForm onSignUp={handleSignUp} />
       </>
