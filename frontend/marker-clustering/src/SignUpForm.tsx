@@ -80,7 +80,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSignUp }) => {
       <div style={{ maxWidth: '600px', width: '100%', padding: '20px', border: '1px solid #ddd', borderRadius: '5px' }}>
         {/* Dog Information Form */}
         <form onSubmit={handleFormSubmit}>
-          <h2>Dog Information</h2>
+          <h2>Sign Up</h2>
           <label>
             Dog Name:
             <input type="text" value={dogName} onChange={handleDogNameChange} style={{ width: '100%' }} />

@@ -59,32 +59,32 @@ const App: React.FC = () =>{
 
   const [showStats, setShowStats] = useState(false);
 
-  useEffect(() => {
-    // Load Google Maps API asynchronously
-    const loadGoogleMapsApi = () => {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=maps&callback=initMap`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        // The Google Maps API has been loaded
-        // You can initialize your map or perform other actions here
-        console.log('Google Maps API loaded');
-      };
-      document.head.appendChild(script);
-    };
-
-    // Call the function to load the API
-    loadGoogleMapsApi();
-
-    // Clean up the script tag on component unmount
-    return () => {
-      const script = document.querySelector('script[src^="https://maps.googleapis.com"]');
-      if (script) {
-        script.remove();
-      }
-    };
-  }, []); // Empty dependency array ensures that this effect runs only once on component mount
+  // useEffect(() => {
+  //   // Load Google Maps API asynchronously
+  //   const loadGoogleMapsApi = () => {
+  //     const script = document.createElement('script');
+  //     script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=maps&callback=initMap`;
+  //     script.async = true;
+  //     script.defer = true;
+  //     script.onload = () => {
+  //       // The Google Maps API has been loaded
+  //       // You can initialize your map or perform other actions here
+  //       console.log('Google Maps API loaded');
+  //     };
+  //     document.head.appendChild(script);
+  //   };
+  //
+  //   // Call the function to load the API
+  //   loadGoogleMapsApi();
+  //
+  //   // Clean up the script tag on component unmount
+  //   return () => {
+  //     const script = document.querySelector('script[src^="https://maps.googleapis.com"]');
+  //     if (script) {
+  //       script.remove();
+  //     }
+  //   };
+  // }, []); // Empty dependency array ensures that this effect runs only once on component mount
 
   // Assuming you have state variables like this in your component
   const [bigParkData, setBigParkData] = useState([]);
@@ -99,6 +99,8 @@ const App: React.FC = () =>{
       setShowChat(false);
       setShowCalendar(false);
       setShowCheckOut(false);
+      setShowHistoricalDogParks(false)
+
 
       // Make a call to update park stats
       const response = await fetch('http://localhost:3029/updateParkStats', {
@@ -122,10 +124,11 @@ const App: React.FC = () =>{
         // Handle the error here if needed
       } else {
         const data = await response.json();
-
+        console.log(data.activeDogsBigPark)
         // Update the state with the received data
-        setBigParkData(data.activeDogsBigPark || []);
-        setSmallParkData(data.activeDogsSmallPark || []);
+        setBigParkData(data.activeDogsBigPark);
+        setSmallParkData(data.activeDogsSmallPark);
+        console.log(bigParkData)
       }
     } catch (error) {
       console.error('Error during toggleStats:', error);
@@ -148,6 +151,8 @@ const App: React.FC = () =>{
     setShowChat(false)
     setShowCalendar(false)
     setShowCheckOut(false)
+    setShowHistoricalDogParks(false)
+
   };
 
   const [showCheckOut, setShowCheckOut] = useState(false);
@@ -159,13 +164,34 @@ const App: React.FC = () =>{
     setShowStats(false)
     setShowChat(false)
     setShowCalendar(false)
+    setShowHistoricalDogParks(false)
+
     //run
+  };
+
+  const toggleHistory = async () => {
+    try {
+      setShowHistoricalDogParks(true)
+      setShowStats(false);
+      setShowCheckIn(false);
+      setShowDogStats(false);
+      setShowChat(false);
+      setShowCalendar(false);
+      setShowCheckOut(false);
+
+      getUserHistory(username)
+
+    } catch (error) {
+      console.error('Error during toggleStats:', error);
+      // Handle the error here if needed
+    }
   };
 
   const [showCalendar, setShowCalendar] = useState(false);
 
   const toggleCalendar = (park) => {
     setShowCalendar(park)
+    setShowHistoricalDogParks(false)
     setShowCheckOut(false)
     setShowChat(false)
     setShowCheckIn(false);
@@ -178,6 +204,7 @@ const App: React.FC = () =>{
 
   const toggleChat = (park) => {
     setShowChat(true)
+    setShowHistoricalDogParks(false)
     setShowCalendar(false)
     setShowCheckOut(false)
     setShowCheckIn(false);
@@ -202,6 +229,7 @@ const App: React.FC = () =>{
     } else {
       setShowDogStats((prevShowDogStats) => !prevShowDogStats);
 
+      setShowHistoricalDogParks(false)
       setShowChat(false)
       setLivePark(null)
       setShowCalendar(false)
@@ -326,28 +354,62 @@ const App: React.FC = () =>{
  };
 
  const checkInPark = async (dog, side) => {
-  try {
-    console.log(dog)
+   try {
+     const { dogName, breed, size, energy, age, imageUrl } = dog;
 
-    const response = await fetch('http://localhost:3029/checkin', {
+     // Assuming 'username' is globally available
+      // Replace with the actual username
+
+     const response = await fetch('http://localhost:3029/checkin', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({
+         dog: { dogName, breed, size, energy, age, imageUrl, username }, // Include 'username'
+         park: 'westwoof',
+         side: side,
+         // Add other fields if needed
+       }),
+     });
+
+     if (response.ok) {
+       const data = await response.json();
+       console.log(data.message);
+       // Perform any additional actions on successful check-in
+     } else {
+       console.error('Check-in failed:', response.statusText);
+     }
+   } catch (error) {
+     console.error('Error during check-in:', error);
+   }
+ };
+
+
+const checkOutPark = async (dog, side) => {
+  try {
+    console.log(dog);
+
+    const response = await fetch('http://localhost:3029/checkout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ dog, park: 'westwoof', side: side /* add other fields if needed */ }),
+      body: JSON.stringify({ dog, park: 'westwoof', side: side, user: username /* add other fields if needed */ }),
     });
 
     if (response.ok) {
       const data = await response.json();
       console.log(data.message);
-      // Perform any additional actions on successful check-in
+      // Perform any additional actions on successful check-out
     } else {
-      console.error('Check-in failed:', response.statusText);
+      console.error('Check-out failed:', response.statusText);
     }
   } catch (error) {
-    console.error('Error during check-in:', error);
+    console.error('Error during check-out:', error);
   }
 };
+
 
 
  const [userDogs, setUserDogs] = useState<Dog[]>([]);
@@ -388,6 +450,48 @@ const App: React.FC = () =>{
     };
 
 
+    const [historicalDogParks, setHistoricalDogParks] = useState([]);
+
+    const [showHistoricalDogParks, setShowHistoricalDogParks] = useState(true);
+
+
+
+    const getUserHistory = async (username) => {
+  try {
+    const response = await fetch(`http://localhost:3029/dogparkhistory?username=${username}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      // Check if historicalDogParks is an array and not empty before updating state
+      if (Array.isArray(data.historicalDogParks) && data.historicalDogParks.length > 0) {
+        setHistoricalDogParks(data.historicalDogParks);
+        console.log(data);
+        // Perform any additional actions with the historical dog park data
+      } else {
+        console.log('No historical dog park data found for the user.');
+        // Optionally display a message or handle the case where no data is found
+      }
+    } else {
+      console.error('Failed to fetch user history:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error during user history fetch:', error);
+  }
+};
+
+    useEffect(() => {
+      // Call getUserHistory when the component mounts
+      //const username = 'exampleUser'; // Replace with the actual username
+      fetchUserDogs(username)
+      getUserHistory(username);
+    }, [username]); // The empty dependency array ensures the effect runs only once
+
+
 
 return (
 
@@ -410,6 +514,14 @@ return (
     >
       Add Dog
     </div>
+
+    <div
+      style={{ cursor: 'pointer', textDecoration: selectedMenu === 'sizes' ? 'underline' : 'none' }}
+      onClick={() => toggleHistory()}
+    >
+      History
+    </div>
+
 
 
     <div
@@ -442,7 +554,7 @@ return (
             style={{ cursor: 'pointer', textDecoration: selectedMenu === 'breeds' ? 'underline' : 'none' }}
             onClick={() => handleMenuClick('na')}
           >
-            Live Dogs
+            Live Dogs: {livePark}
           </div>
         </div>
         <RosterTable bigParkData={bigParkData} smallParkData={smallParkData} />
@@ -451,6 +563,30 @@ return (
       </div>
     )}
 
+    {showHistoricalDogParks && (
+      <div style={{ overflowY: 'auto', maxHeight: '300px' }}>
+        {historicalDogParks.map((park, index) => (
+          <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
+            <h3>{username}'s History:</h3>
+            <p>Timestamp: {park.timestamp}</p>
+            <p>Check-in Event:</p>
+            {park.events.map((event, eventIndex) => (
+              <div key={eventIndex}>
+                {event.checkin && (
+                  <>
+                    <p>Dog Name: {event.dogName}</p>
+                    <p>Park Name: {event.parkname}</p>
+                    <p>Check-in Timestamp: {event.timestamp}</p>
+                    {/* Add other details from the check-in event */}
+                  </>
+                )}
+              </div>
+            ))}
+            {/* Additional rendering for other events like check-out can be added similarly */}
+          </div>
+        ))}
+      </div>
+    )}
 
 
       {showCheckIn && (
@@ -462,8 +598,8 @@ return (
         >
         {userDogs.map((dog, index) => (
           <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
-            <h3>{dog.dogName}'s Check In: <div onClick={() => checkInPark(dog, 'big')}>Big Park</div>
-            <div onClick={() => checkInPark(dog, 'small')}>Small Park</div></h3>
+            <h3>{dog.dogName}'s Check In: <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkInPark(dog, 'big')}>Big Park</div>
+            <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkInPark(dog, 'small')}>Small Park</div></h3>
 
           </div>
         ))}
@@ -479,6 +615,34 @@ return (
 
         </div>
       )}
+
+      {showCheckOut && (
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+        <div
+          style={{ cursor: 'pointer', textDecoration: selectedMenu === 'breeds' ? 'underline' : 'none' }}
+          onClick={() => handleMenuClick('na')}
+        >
+        {userDogs.map((dog, index) => (
+          <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
+            <h3>{dog.dogName}'s Check Out: <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkOutPark(dog, 'big')}>Big Park</div>
+            <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkOutPark(dog, 'small')}>Small Park</div></h3>
+
+          </div>
+        ))}
+
+        </div>
+
+      </div>
+
+
+
+        {/* Content based on selected menu */}
+
+        </div>
+      )}
+
+
 
 
             {showDogStats && (
@@ -587,39 +751,76 @@ const Markers: React.FC<Props> = ({ points }) => {
   );
 };
 
-const RosterTable: React.FC<{ bigParkData: Dog[], smallParkData: Dog[] }> = ({ bigParkData, smallParkData }) => (
-  <div style={{ overflowX: 'auto' }}>
-    <table style={{ width: '90%', overflowX: 'auto' }}>
-      <thead>
-        <tr>
-          <th style={{ padding: '5px' }}>Dog</th>
-          <th style={{ padding: '5px' }}>Pic</th>
-          <th style={{ padding: '5px' }}>Breed</th>
-          <th style={{ padding: '5px' }}>Size</th>
-          <th style={{ padding: '5px' }}>Energy</th>
-          <th style={{ padding: '5px' }}>Reviews</th>
-          <th style={{ padding: '5px' }}>Age</th>
-        </tr>
-      </thead>
-      <tbody>
-        {/* Render rows based on bigParkData and smallParkData */}
-        {/* Example: */}
-        {bigParkData.map((dog) => (
-          <tr key={dog.id}>
-            <td>{dog.dogName}</td>
-            <td>{/* Dog pic */}</td>
-            <td>{dog.breed}</td>
-            <td>{dog.size}</td>
-            <td>{dog.energy}</td>
-            <td>{/* Reviews */}</td>
-            <td>{dog.age}</td>
+const RosterTable: React.FC<{ bigParkData: Dog[], smallParkData: Dog[] }> = ({ bigParkData, smallParkData }) => {
+  console.log('Received bigParkData:', bigParkData);
+  console.log('Received smallParkData:', smallParkData);
+
+  return (
+    <div style={{ overflowX: 'auto' }}>
+    <div style={{ marginTop: '5px', textAlign: 'left', fontSize: '1.2em' }}>Big Park</div>
+
+      <table style={{ width: '90%', overflowX: 'auto' }}>
+        <thead>
+          <tr>
+            <th style={{ padding: '5px' }}>Dog</th>
+            <th style={{ padding: '5px' }}>Pic</th>
+            <th style={{ padding: '5px' }}>Breed</th>
+            <th style={{ padding: '5px' }}>Size</th>
+            <th style={{ padding: '5px' }}>Energy</th>
+            <th style={{ padding: '5px' }}>Until</th>
+            <th style={{ padding: '5px' }}>Age</th>
           </tr>
-        ))}
-        {/* Repeat for smallParkData */}
-      </tbody>
-    </table>
-  </div>
-);
+        </thead>
+        <tbody>
+          {/* Render rows based on bigParkData and smallParkData */}
+          {/* Example: */}
+          {bigParkData.map((item) => (
+            <tr key={item.dog.id}>
+              <td>{item.dog.name}</td>
+              <td>{/* Dog pic */}</td>
+              <td>{item.dog.breed}</td>
+              <td>{item.dog.size}</td>
+              <td>{item.dog.energy}</td>
+              <td>{item.checkinExpiration}</td>
+              <td>{item.dog.age}</td>
+            </tr>
+          ))}
+          {/* Repeat for smallParkData */}
+        </tbody>
+      </table>
+      <div style={{ marginTop: '20px', textAlign: 'left', fontSize: '1.2em' }}>Small Park</div>
+      <table style={{ width: '90%', overflowX: 'auto' }}>
+        <thead>
+          <tr>
+            <th style={{ padding: '5px' }}>Dog</th>
+            <th style={{ padding: '5px' }}>Pic</th>
+            <th style={{ padding: '5px' }}>Breed</th>
+            <th style={{ padding: '5px' }}>Size</th>
+            <th style={{ padding: '5px' }}>Energy</th>
+            <th style={{ padding: '5px' }}>Until</th>
+            <th style={{ padding: '5px' }}>Age</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* Render rows based on bigParkData and smallParkData */}
+          {/* Example: */}
+          {smallParkData.map((item) => (
+            <tr key={item.dog.id}>
+              <td>{item.dog.name}</td>
+              <td>{/* Dog pic */}</td>
+              <td>{item.dog.breed}</td>
+              <td>{item.dog.size}</td>
+              <td>{item.dog.energy}</td>
+              <td>{item.checkinExpiration}</td>
+              <td>{item.dog.age}</td>
+            </tr>
+          ))}
+          {/* Repeat for smallParkData */}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 
 
