@@ -553,7 +553,74 @@ app.post('/adddog', async (req, res) => {
 });
 
 
+app.post('/editdog', async (req, res) => {
+  try {
+    const { username, previousDogName, dogData } = req.body;
+    console.log('hello')
 
+    // Find the user by username
+    const user = await client.db("barkit").collection("users").findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+console.log(user)
+console.log(previousDogName)
+
+    // Find the index of the dog to be edited using previousDogName
+    const dogIndex = user.dogs.findIndex(dog => dog.dogName === previousDogName);
+
+    console.log(dogIndex)
+    if (dogIndex === -1) {
+      return res.status(404).json({ message: 'Dog not found' });
+    }
+
+    // Update the dog details
+    user.dogs[dogIndex] = dogData;
+
+    // Update the user in the database
+    await client.db("barkit").collection("users").updateOne({ username }, { $set: { dogs: user.dogs } });
+
+    res.status(200).json({ message: 'Dog edited successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+
+app.post('/removedog', async (req, res) => {
+  try {
+    const { username, dogData } = req.body;
+
+    // Find the user by username
+    const user = await client.db("barkit").collection("users").findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Find the index of the dog to be removed
+    const dogIndex = user.dogs.findIndex(dog => dog.dogName === dogData.dogName);
+
+    if (dogIndex === -1) {
+      return res.status(404).json({ message: 'Dog not found' });
+    }
+
+    // Remove the dog from the user's dogs array
+    user.dogs.splice(dogIndex, 1);
+
+    // Update the user in the database
+    await client.db("barkit").collection("users").updateOne({ username }, { $set: { dogs: user.dogs } });
+
+    res.status(200).json({ message: 'Dog removed successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 
 

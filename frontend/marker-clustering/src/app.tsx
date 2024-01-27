@@ -101,6 +101,8 @@ const App: React.FC = () =>{
       setShowCheckOut(false);
       setShowHistoricalDogParks(false)
       setShowAddDog(false);
+      setShowRemoveDog(false)
+      setShowEditDog(false)
 
 
       // Make a call to update park stats
@@ -154,6 +156,8 @@ const App: React.FC = () =>{
     setShowCheckOut(false)
     setShowHistoricalDogParks(false)
     setShowAddDog(false);
+    setShowRemoveDog(false)
+    setShowEditDog(false)
 
   };
 
@@ -168,6 +172,8 @@ const App: React.FC = () =>{
     setShowCalendar(false)
     setShowHistoricalDogParks(false)
     setShowAddDog(false);
+    setShowRemoveDog(false)
+    setShowEditDog(false)
 
     //run
   };
@@ -182,6 +188,8 @@ const App: React.FC = () =>{
       setShowCalendar(false);
       setShowCheckOut(false);
       setShowAddDog(false);
+      setShowRemoveDog(false)
+      setShowEditDog(false)
 
       getUserHistory(username)
 
@@ -203,6 +211,8 @@ const App: React.FC = () =>{
     setShowDogStats(false);
     setShowStats(false)
     setShowAddDog(false);
+    setShowRemoveDog(false)
+    setShowEditDog(false)
 
   };
 
@@ -218,11 +228,47 @@ const App: React.FC = () =>{
     setShowDogStats(false);
     setShowStats(false)
     setShowAddDog(false);
+    setShowRemoveDog(false)
+    setShowEditDog(false)
 
   };
+  const [previousDogName, setPreviousDogName] = useState('')
+
+  const [showEditDog, setShowEditDog] = useState(false);
+  const toggleDogEdit = (dog) => {
+      setPreviousDogName(dog.dogName)
+      setShowEditDog(true)
+      setShowDogStats(false);
+      setShowHistoricalDogParks(false)
+      setShowChat(false)
+      setLivePark(null)
+      setShowCalendar(false)
+      setShowCheckOut(false)
+      setShowCheckIn(false);
+      setShowStats(false)
+      setShowAddDog(false);
+      setShowRemoveDog(false)
+
+  }
+
+  const [selectedDog, setSelectedDog] = useState([])
+  const [showRemoveDog, setShowRemoveDog] = useState(false);
+  const toggleDogRemove = (dog) => {
+      setSelectedDog(dog)
+      setShowRemoveDog(true)
+      setShowEditDog(false)
+      setShowDogStats(false);
+      setShowHistoricalDogParks(false)
+      setShowChat(false)
+      setLivePark(null)
+      setShowCalendar(false)
+      setShowCheckOut(false)
+      setShowCheckIn(false);
+      setShowStats(false)
+      setShowAddDog(false);
+  }
 
   const [showDogStats, setShowDogStats] = useState(false);
-
 
   const toggleDogStats = () => {
     if (
@@ -233,6 +279,7 @@ const App: React.FC = () =>{
       !showCheckIn &&
       !showHistoricalDogParks &&
       !showAddDog &&
+      !showEditDog &&
       !showStats
     ) {
       setShowDogStats((prevShowDogStats) => !prevShowDogStats);
@@ -247,7 +294,8 @@ const App: React.FC = () =>{
       setShowCheckIn(false);
       setShowStats(false)
       setShowAddDog(false);
-
+      setShowRemoveDog(false)
+      setShowEditDog(false)
     }
   };
 
@@ -453,7 +501,7 @@ const checkOutPark = async (dog, side) => {
           <ul>
             {userDogs.map((dog, index) => (
               <li key={index} >
-            {dog.dogImage} -  {dog.dogName}     <button onClick={() => toggleDogStats()} style={{ color: 'grey'}}>Stats</button>  <a style={{ color: 'grey'}}>Edit</a> <a style={{ color: 'grey'}}>Remove</a>
+            {dog.dogImage} -  {dog.dogName} <button onClick={() => toggleDogStats()} style={{ color: 'grey'}}>Stats</button>  <button style={{ color: 'grey'}}  onClick={() => toggleDogEdit(dog)}>Edit</button> <button  onClick={() => toggleDogRemove(dog)} style={{ color: 'grey'}}>Remove</button>
               </li>
             ))}
           </ul>
@@ -516,7 +564,7 @@ const checkOutPark = async (dog, side) => {
       const [dogImage, setDogImage] = useState<File | null>(null);
 
       const handleDogNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-      setDogName(e.target.value);
+        setDogName(e.target.value);
       };
 
       const handleBreedChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -556,33 +604,34 @@ const checkOutPark = async (dog, side) => {
         setShowCheckOut(false)
         setShowCheckIn(false);
         setShowStats(false)
+        setShowEditDog(false)
+        setShowRemoveDog(false)
       }
 
       const handleAddDogClick = async () => {
-      try {
+          try {
+            const requestData = {
+        username,
+        dogData: {
+          dogName,
+          breed,
+          size,
+          energy,
+          age,
+          dogImage, // If dogImage is undefined, set it to null
+        },
+        // Add other fields if needed
+      };
 
-        const requestData = {
-    username,
-    dogData: {
-      dogName,
-      breed,
-      size,
-      energy,
-      age,
-      dogImage, // If dogImage is undefined, set it to null
-    },
-    // Add other fields if needed
-  };
+      console.log(requestData);
 
-  console.log(requestData);
-
-  const response = await fetch('http://localhost:3029/adddog', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestData),
-  });
+      const response = await fetch('http://localhost:3029/adddog', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
 
         if (response.ok) {
           // Call the onAddDog callback if the dog is added successfully
@@ -597,6 +646,93 @@ const checkOutPark = async (dog, side) => {
         console.error('Error during add dog request:', error);
       }
 };
+
+useEffect(() => {
+   const fetchData = async () => {
+     if (userSignedIn) {
+       try {
+         const dogs = await fetchUserDogs(username);
+         setUserDogs(dogs);
+       } catch (error) {
+         console.error('Error fetching user dogs:', error);
+       }
+     }
+   };
+
+   fetchData();
+ }, [showAddDog, showEditDog, showRemoveDog]);
+
+   const handleEditDogClick = async () => {
+    try {
+      const requestData = {
+        username,
+        previousDogName,
+        dogData: {
+          dogName: dogName,
+          breed: breed,
+          size: size,
+          energy: energy,
+          age: age,
+          dogImage: dogImage, // If editedDogImage is undefined, set it to null
+        },
+        // Add other fields if needed
+      };
+
+      console.log(requestData);
+
+      const response = await fetch('http://localhost:3029/editdog', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (response.ok) {
+        // Handle success, e.g., close the edit form and update data
+        setShowEditDog(false);
+        setShowHistoricalDogParks(true);
+        fetchUserDogs(username);
+      } else {
+        console.error('Failed to edit dog:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error during edit dog request:', error);
+    }
+  };
+
+  const handleRemoveDogClick = async () => {
+  try {
+    const requestData = {
+      username,
+      dogData: {
+        dogName: selectedDog.dogName,
+        // You may add other fields if needed
+      },
+    };
+
+    const response = await fetch('http://localhost:3029/removedog', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+    });
+
+    if (response.ok) {
+      // Handle successful removal (e.g., update UI, fetch updated dog list)
+      console.log('Dog removed successfully');
+      setShowRemoveDog(false);
+      fetchUserDogs(username);
+    } else {
+      console.error('Failed to remove dog:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error during remove dog request:', error);
+  }
+};
+
+
 
 return (
 
@@ -668,6 +804,57 @@ return (
       </div>
     )}
 
+    {showEditDog && (
+      <form>
+        <h2>Edit Dog</h2>
+        <label>
+          Dog Name:
+          <input type="text" value={dogName} onChange={handleDogNameChange} style={{ width: '100%' }} />
+        </label>
+        <br />
+        <label>
+          Breed:
+          <input type="text" value={breed} onChange={handleBreedChange} style={{ width: '100%' }} />
+        </label>
+        <br />
+        <label>
+          Size:
+          <input type="text" value={size} onChange={handleSizeChange} style={{ width: '100%' }} />
+        </label>
+        <br />
+        <label>
+          Energy:
+          <input type="text" value={energy} onChange={handleEnergyChange} style={{ width: '100%' }} />
+        </label>
+        <br />
+        <label>
+          Age:
+          <input type="text" value={age} onChange={handleAgeChange} style={{ width: '100%' }} />
+        </label>
+        <br />
+        <label>
+          Dog Image:
+          <input type="file" accept="image/*" onChange={handleDogImageChange} style={{ width: '100%' }} />
+        </label>
+        <br />
+        <button type="button" onClick={()=>handleEditDogClick()}>
+          Edit Dog
+        </button>
+      </form>
+    )}
+
+    {showRemoveDog && (
+      <div>
+        <h2>Remove Dog</h2>
+        <p>Are you sure you want to remove {selectedDog.dogName}?</p>
+        <button type="button" onClick={()=>handleRemoveDogClick()}>
+          Remove Dog
+        </button>
+
+      </div>
+    )}
+
+
     {showHistoricalDogParks && (
       <div style={{ overflowY: 'auto', maxHeight: '300px' }}>
         {historicalDogParks.map((park, index) => (
@@ -725,7 +912,7 @@ return (
         <input type="file" accept="image/*" onChange={handleDogImageChange} style={{ width: '100%' }} />
       </label>
       <br />
-      <button type="button" onClick={handleAddDogClick}>Add Dog</button>
+      <button type="button" onClick={()=>handleAddDogClick()}>Add Dog</button>
     </div>
       )}
 
