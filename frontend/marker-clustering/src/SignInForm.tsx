@@ -3,15 +3,28 @@ import React, { useState } from 'react';
 
 type SignInFormProps = {
   onSignIn: (username: string, password: string) => void;
+  onForgotPassword: (email: string, username: string) => void;
 };
 
-const SignInForm: React.FC<SignInFormProps> = ({ onSignIn }) => {
+const SignInForm: React.FC<SignInFormProps> = ({ onSignIn, onForgotPassword }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [emailForForgotPassword, setEmailForForgotPassword] = useState('');
+  const [resetPasswordVisible, setResetPasswordVisible] = useState(false);
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
     onSignIn(username, password);
+  };
+
+  const handleForgotPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    onForgotPassword(emailForForgotPassword, username);
+  };
+
+  const handleBackToSignIn = () => {
+    setResetPasswordVisible(false);
+    setEmailForForgotPassword('');
   };
 
   const formStyle: React.CSSProperties = {
@@ -49,6 +62,7 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSignIn }) => {
     borderRadius: '3px',
     cursor: 'pointer',
     fontSize: '16px',
+    marginRight: '10px', // Added margin for separation
   };
 
   const buttonHoverStyle: React.CSSProperties = {
@@ -56,26 +70,69 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSignIn }) => {
   };
 
   return (
-    <form style={formStyle} onSubmit={handleSignIn}>
-      <label style={labelStyle}>
-        Username:
-        <input type="text" value={username} style={inputStyle} onChange={(e) => setUsername(e.target.value)} />
-      </label>
-      <br />
-      <label style={labelStyle}>
-        Password:
-        <input type="password" value={password} style={inputStyle} onChange={(e) => setPassword(e.target.value)} />
-      </label>
-      <br />
-      <button
-        type="submit"
-        style={buttonStyle}
-        onMouseOver={(e) => (e.currentTarget.style = buttonHoverStyle)}
-        onMouseOut={(e) => (e.currentTarget.style = buttonStyle)}
-      >
-        Sign In
-      </button>
-    </form>
+    <div>
+      {resetPasswordVisible ? (
+        // "Forgot Password" Form
+        <form style={formStyle} onSubmit={handleForgotPassword}>
+          <label style={labelStyle}>
+            Username:
+            <input
+              type="text"
+              value={username}
+              style={inputStyle}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </label>
+          <br />
+          <label style={labelStyle}>
+            Email for Forgot Password:
+            <input
+              type="text"
+              value={emailForForgotPassword}
+              style={inputStyle}
+              onChange={(e) => setEmailForForgotPassword(e.target.value)}
+            />
+          </label>
+          <br />
+          <button
+            type="submit"
+            style={buttonStyle}
+            onMouseOver={(e) => (e.currentTarget.style = buttonHoverStyle)}
+            onMouseOut={(e) => (e.currentTarget.style = buttonStyle)}
+          >
+            Forgot Password
+          </button>
+          <button type="button" style={buttonStyle} onClick={handleBackToSignIn}>
+            Back
+          </button>
+        </form>
+      ) : (
+        // Sign-in Form
+        <form style={formStyle} onSubmit={handleSignIn}>
+          <label style={labelStyle}>
+            Username:
+            <input type="text" value={username} style={inputStyle} onChange={(e) => setUsername(e.target.value)} />
+          </label>
+          <br />
+          <label style={labelStyle}>
+            Password:
+            <input type="password" value={password} style={inputStyle} onChange={(e) => setPassword(e.target.value)} />
+          </label>
+          <br />
+          <button
+            type="submit"
+            style={buttonStyle}
+            onMouseOver={(e) => (e.currentTarget.style = buttonHoverStyle)}
+            onMouseOut={(e) => (e.currentTarget.style = buttonStyle)}
+          >
+            Sign In
+          </button>
+          <button style={buttonStyle} onClick={() => setResetPasswordVisible(true)}>
+            Forgot Password?
+          </button>
+        </form>
+      )}
+    </div>
   );
 };
 

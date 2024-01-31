@@ -73,9 +73,9 @@ app.post('/signup', async (req, res) => {
   console.log(req.body);
 
   try {
-    const { username, password, dogName, breed, size, energy, age, dogImage } = req.body;
+    const { username, password, dogName, breed, size, energy, age, dogImage, email } = req.body;
 
-console.log(username)
+    console.log(username);
     // Check if the username already exists
     const existingUser = await client.db("barkit").collection("users").findOne({ username });
 
@@ -83,13 +83,20 @@ console.log(username)
       return res.status(400).json({ message: 'Username already exists' });
     }
 
-    console.log('sdff')
+    // Check if the email already exists
+    const existingEmail = await client.db("barkit").collection("users").findOne({ email });
 
-    const dogs = [{ dogName, age, breed, size, energy, dogImage }]
-    // Create a new user
-    const newUser = { username, password, dogs };
+    if (existingEmail) {
+      return res.status(400).json({ message: 'Email already exists' });
+    }
 
-    console.log(newUser)
+    console.log('sdff');
+
+    const dogs = [{ dogName, age, breed, size, energy, dogImage }];
+    // Include email in the user schema
+    const newUser = { username, password, email, dogs };
+
+    console.log(newUser);
     await client.db("barkit").collection("users").insertOne(newUser);
 
     res.status(201).json({ message: 'User created successfully' });
@@ -98,6 +105,7 @@ console.log(username)
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 // Sign-in endpoint (replace with actual logic)
 // Sign-in endpoint
@@ -616,6 +624,33 @@ app.post('/removedog', async (req, res) => {
     await client.db("barkit").collection("users").updateOne({ username }, { $set: { dogs: user.dogs } });
 
     res.status(200).json({ message: 'Dog removed successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+// Backend (Node.js + Express) Code
+
+// Forgot password endpoint
+app.post('/forgotpassword', async (req, res) => {
+  console.log('hola')
+  try {
+    const { username, email } = req.body;
+    console.log(req.body)
+    // Fetch user from the database based on username and email
+    const user = await client.db("barkit").collection("users").findOne({ username, email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found or invalid email' });
+    }
+
+    // Implement your logic to generate and send a password reset link/token via email
+    // ...
+    console.log(user)
+
+    res.status(200).json({ message: 'Password reset link sent successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });

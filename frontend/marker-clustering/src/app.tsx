@@ -335,10 +335,11 @@ const App: React.FC = () =>{
     }
   };
 
-  const handleSignUp = async (username: string, password: string, dogData: Dog) => {
+  const handleSignUp = async (username: string, email: string, password: string, dogData: Dog) => {
   try {
     const requestBody = {
       username: username,
+      email: email, // Include email in the request body
       password: password,
       dogName: dogData.name,
       breed: dogData.breed,
@@ -368,6 +369,36 @@ const App: React.FC = () =>{
       console.error('Error during sign-up:', error);
     }
 };
+
+// Frontend (React) Code
+
+  const handleForgotPassword = async (username: string, email: string) => {
+  try {
+    const requestBody = {
+      username: username,
+      email: email,
+    };
+
+    const response = await fetch('http://localhost:3029/forgotpassword', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data.message);
+      // Handle success (e.g., display a success message to the user)
+    } else {
+      console.error('Forgot password failed:', response.statusText);
+      // Handle failure (e.g., display an error message to the user)
+    }
+  } catch (error) {
+    console.error('Error during forgot password:', error);
+  }
+  };
 
 
   const handleAddDog = (newDogs: Dog[]) => {
@@ -738,6 +769,8 @@ const handleSignOut =()=>{
 }
 
 
+const [showSignInForm, setShowSignInForm] = useState(false);
+  const [showSignUpForm, setShowSignUpForm] = useState(false);
 
 
 return (
@@ -1021,9 +1054,23 @@ return (
         <h4 style={{ textAlign: 'left', marginBottom: '0px' }}> Welcome to Bark It</h4>
         <h4 style={{ textAlign: 'left', marginBottom: '0px' }}> YikYak meets Surfline for dog parks.</h4>
 
+        <div style={{ marginBottom: '20px' }}>
+               <button onClick={() => {
+            setShowSignInForm(true);
+            setShowSignUpForm(false); // Set SignUpForm to false when SignInForm is clicked
+          }}>Sign In</button>
+               <button onClick={() => {
+            setShowSignUpForm(true);
+            setShowSignInForm(false); // Set SignInForm to false when SignUpForm is clicked
+          }}>Sign Up</button>
+             </div>
+             {showSignInForm && (
+               <SignInForm onSignIn={handleSignIn} onForgotPassword={handleForgotPassword} />
+             )}
+             {showSignUpForm && (
+               <SignUpForm onSignUp={handleSignUp} />
+             )}
 
-        <SignInForm onSignIn={handleSignIn} />
-        <SignUpForm onSignUp={handleSignUp} />
       </>
     )}
   </div>

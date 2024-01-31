@@ -13,6 +13,11 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSignUp }) => {
   const [energy, setEnergy] = useState('');
   const [age, setAge] = useState('');
   const [dogImage, setDogImage] = useState<File | null>(null);
+  const [email, setEmail] = useState(''); // Add email state
+
+  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
 
   const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
@@ -61,7 +66,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSignUp }) => {
     };
 
 
-    onSignUp(username, password, dogData);
+     onSignUp(username, email, password, dogData);
   };
 
   const buttonStyle: React.CSSProperties = {
@@ -75,61 +80,70 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSignUp }) => {
     fontSize: '16px',
   };
 
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <div style={{ maxWidth: '600px', width: '100%', padding: '20px', border: '1px solid #ddd', borderRadius: '5px' }}>
-        {/* Dog Information Form */}
-        <form onSubmit={handleFormSubmit}>
-          <h2>Sign Up</h2>
-          <label>
-            Dog Name:
-            <input type="text" value={dogName} onChange={handleDogNameChange} style={{ width: '100%' }} />
-          </label>
-          <br />
-          <label>
-            Breed:
-            <input type="text" value={breed} onChange={handleBreedChange} style={{ width: '100%' }} />
-          </label>
-          <br />
-          <label>
-            Size:
-            <input type="text" value={size} onChange={handleSizeChange} style={{ width: '100%' }} />
-          </label>
-          <br />
-          <label>
-            Energy:
-            <input type="text" value={energy} onChange={handleEnergyChange} style={{ width: '100%' }} />
-          </label>
-          <br />
-          <label>
-            Age:
-            <input type="text" value={age} onChange={handleAgeChange} style={{ width: '100%' }} />
-          </label>
-          <br />
-          <label>
-            Dog Image:
-            <input type="file" accept="image/*" onChange={handleDogImageChange} style={{ width: '100%' }} />
-          </label>
-          <br />
+  // ... (Previous code)
 
-        {/* Username and Password Form */}
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div style={{ maxWidth: '600px', width: '100%', padding: '20px', border: '1px solid #ddd', borderRadius: '5px' }}>
+          {/* Dog Information Form */}
+          <form onSubmit={handleFormSubmit}>
+            <h2>Sign Up</h2>
+            <label>
+              Dog Name:
+              <input type="text" value={dogName} onChange={handleDogNameChange} style={{ width: '100%' }} />
+            </label>
+            <br />
+            <label>
+              Breed:
+              <input type="text" value={breed} onChange={handleBreedChange} style={{ width: '100%' }} />
+            </label>
+            <br />
+            <label>
+              Size:
+              <input type="text" value={size} onChange={handleSizeChange} style={{ width: '100%' }} />
+            </label>
+            <br />
+            <label>
+              Energy:
+              <input type="text" value={energy} onChange={handleEnergyChange} style={{ width: '100%' }} />
+            </label>
+            <br />
+            <label>
+              Age:
+              <input type="text" value={age} onChange={handleAgeChange} style={{ width: '100%' }} />
+            </label>
+            <br />
+            <label>
+              Dog Image:
+              <input type="file" accept="image/*" onChange={handleDogImageChange} style={{ width: '100%' }} />
+            </label>
+            <br />
 
-          <h2>Username and Password</h2>
-          <label>
-            Username:
-            <input type="text" value={username} onChange={handleUsernameChange} style={{ width: '100%' }} />
-          </label>
-          <br />
-          <label>
-            Password:
-            <input type="password" value={password} onChange={handlePasswordChange} style={{ width: '100%' }} />
-          </label>
-          <br />
-          <button type="submit" style={buttonStyle}>Sign Up</button>
-        </form>
+            {/* Email Form */}
+            <h2>Email</h2>
+            <label>
+              Email:
+              <input type="text" value={email} onChange={handleEmailChange} style={{ width: '100%' }} />
+            </label>
+            <br />
+
+          {/* Username and Password Form */}
+            <h2>Username and Password</h2>
+            <label>
+              Username:
+              <input type="text" value={username} onChange={handleUsernameChange} style={{ width: '100%' }} />
+            </label>
+            <br />
+            <label>
+              Password:
+              <input type="password" value={password} onChange={handlePasswordChange} style={{ width: '100%' }} />
+            </label>
+            <br />
+            <button type="submit" style={buttonStyle}>Sign Up</button>
+          </form>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
-export default SignUpForm;
+  export default SignUpForm;
