@@ -6,6 +6,7 @@ import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import SignUpForm from './SignUpForm'; // Adjust the path accordingly
 import SignInForm from './SignInForm'; // Adjust the path accordingly
 import Chat from './chat'; // Assuming the Chat component file is in the same directory
+import PasswordResetForm from './PasswordResetForm'; // New PasswordResetForm component
 
 import type { Marker } from '@googlemaps/markerclusterer';
 import trees from './trees';
@@ -19,6 +20,7 @@ import {
 } from '@vis.gl/react-google-maps';
 
 import {MarkerWithInfowindow} from './marker-with-infowindow';
+
 
 
 
@@ -378,6 +380,7 @@ const App: React.FC = () =>{
       username: username,
       email: email,
     };
+    console.log(requestBody.email)
 
     const response = await fetch('http://localhost:3029/forgotpassword', {
       method: 'POST',
@@ -424,6 +427,7 @@ const App: React.FC = () =>{
    // Function to fetch user's dogs
  const fetchUserDogs = async (username: string) => {
    try {
+     console.log(username)
      const response = await fetch(`http://localhost:3029/userdogs?username=${username}`, {
        method: 'GET',
        headers: {
@@ -772,6 +776,30 @@ const handleSignOut =()=>{
 const [showSignInForm, setShowSignInForm] = useState(false);
   const [showSignUpForm, setShowSignUpForm] = useState(false);
 
+  const [emailForReset, setEmailForReset] = useState('');
+
+  const [resetPw, setResetPw] = useState(false);
+
+   useEffect(() => {
+     // Extracting query parameters from the URL
+     const urlParams = new URLSearchParams(window.location.search);
+     const resetPwParam = urlParams.get('resetPw');
+     const emailParam = urlParams.get('email');
+     console.log(emailParam)
+     // Setting state based on query parameters
+     setResetPw(resetPwParam === 'true');
+     setEmailForReset(emailParam || '');
+
+   }, []);
+
+   const handleResetPassword = async (newPassword) => {
+   // Implement your logic to reset the password
+   // This can involve making an API call to your server with the new password and email
+   // ...
+
+   // After resetting the password, switch resetPw back to false
+   setResetPw(false);
+ };
 
 return (
 
@@ -1054,6 +1082,13 @@ return (
         <h4 style={{ textAlign: 'left', marginBottom: '0px' }}> Welcome to Bark It</h4>
         <h4 style={{ textAlign: 'left', marginBottom: '0px' }}> YikYak meets Surfline for dog parks.</h4>
 
+        {resetPw ? (
+                     <PasswordResetForm
+                       email={emailForReset}
+                       onResetPassword={handleResetPassword}
+                     />
+                   ) : (
+        <>
         <div style={{ marginBottom: '20px' }}>
                <button onClick={() => {
             setShowSignInForm(true);
@@ -1070,7 +1105,8 @@ return (
              {showSignUpForm && (
                <SignUpForm onSignUp={handleSignUp} />
              )}
-
+      </>
+    )}
       </>
     )}
   </div>

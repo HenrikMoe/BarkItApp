@@ -19,7 +19,7 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSignIn, onForgotPassword }) =
 
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    onForgotPassword(emailForForgotPassword, username);
+    onForgotPassword(username, emailForForgotPassword);
   };
 
   const handleBackToSignIn = () => {
@@ -69,20 +69,23 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSignIn, onForgotPassword }) =
     backgroundColor: '#45a049',
   };
 
+  // <label style={labelStyle}>
+  //   Username:
+  //   <input
+  //     type="text"
+  //     value={username}
+  //     style={inputStyle}
+  //     onChange={(e) => setUsername(e.target.value)}
+  //   />
+  // </label>
+  // <div>and/or</div>
+
   return (
     <div>
       {resetPasswordVisible ? (
         // "Forgot Password" Form
         <form style={formStyle} onSubmit={handleForgotPassword}>
-          <label style={labelStyle}>
-            Username:
-            <input
-              type="text"
-              value={username}
-              style={inputStyle}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </label>
+
           <br />
           <label style={labelStyle}>
             Email for Forgot Password:

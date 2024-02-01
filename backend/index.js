@@ -6,6 +6,7 @@ app.use(cors());
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 dotenv.config();
+const nodemailer = require('nodemailer');
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = process.env.MONGO_URI;
@@ -638,24 +639,51 @@ app.post('/forgotpassword', async (req, res) => {
   console.log('hola')
   try {
     const { username, email } = req.body;
-    console.log(req.body)
+    console.log(email)
     // Fetch user from the database based on username and email
-    const user = await client.db("barkit").collection("users").findOne({ username, email });
+    var user = await client.db("barkit").collection("users").findOne({ email});
+    // if (!user) {
+    //   user = await client.db("barkit").collection("users").findOne({ username});
+    // }
 
     if (!user) {
       return res.status(404).json({ message: 'User not found or invalid email' });
     }
 
-    // Implement your logic to generate and send a password reset link/token via email
-    // ...
-    console.log(user)
+    const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: 'your-email@gmail.com', // Replace with your Gmail email address
+            pass: 'your-password', // Replace with your Gmail app password
+          },
+        });
 
-    res.status(200).json({ message: 'Password reset link sent successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
+        // URL with username and email as query parameters
+        const resetUrl = `http://localhost:3029?resetPw=${true}&email=${user.email}`;
+
+        const mailOptions = {
+          from: 'your-email@gmail.com', // Replace with your Gmail email address
+          to: user.email,
+          subject: 'Password Reset',
+          text: `Click the following link to reset your password: ${resetUrl}`,
+        };
+
+        // Send the email
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Error sending password reset email' });
+          }
+
+          console.log('Email sent: ' + info.response);
+          res.status(200).json({ message: 'Password reset link sent successfully' });
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+      }
+    });
+
 
 
 
