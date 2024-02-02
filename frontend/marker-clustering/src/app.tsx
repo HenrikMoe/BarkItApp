@@ -7,7 +7,7 @@ import SignUpForm from './SignUpForm'; // Adjust the path accordingly
 import SignInForm from './SignInForm'; // Adjust the path accordingly
 import Chat from './chat'; // Assuming the Chat component file is in the same directory
 import PasswordResetForm from './PasswordResetForm'; // New PasswordResetForm component
-
+import DogParkCalendar from './DogParkCalendar'
 import type { Marker } from '@googlemaps/markerclusterer';
 import trees from './trees';
 import {
@@ -20,6 +20,7 @@ import {
 } from '@vis.gl/react-google-maps';
 
 import {MarkerWithInfowindow} from './marker-with-infowindow';
+
 
 
 
@@ -875,7 +876,7 @@ return (
       disableDefaultUI={true}
         >
         <Markers points={trees} />
-        <MarkerWithInfowindow infowindowOpen={infowindowOpen} toggleWindow={toggleWindow} toggleStats={toggleStats} toggleCheckIn={toggleCheckIn} toggleCalendar={toggleCalendar} toggleCheckOut={toggleCheckOut} toggleChat={toggleChat}/>
+        <MarkerWithInfowindow parkname={livePark} bigParkData={bigParkData} smallParkData={smallParkData} infowindowOpen={infowindowOpen} toggleWindow={toggleWindow} toggleStats={toggleStats} toggleCheckIn={toggleCheckIn} toggleCalendar={toggleCalendar} toggleCheckOut={toggleCheckOut} toggleChat={toggleChat}/>
       </Map>
     </APIProvider>
 
@@ -888,7 +889,7 @@ return (
             style={{ cursor: 'pointer', textDecoration: selectedMenu === 'breeds' ? 'underline' : 'none' }}
             onClick={() => handleMenuClick('na')}
           >
-            Live Dogs: {livePark}
+            Active Dogs: {livePark}
           </div>
         </div>
         <RosterTable bigParkData={bigParkData} smallParkData={smallParkData} />
@@ -945,6 +946,10 @@ return (
         </button>
 
       </div>
+    )}
+
+    {showCalendar && (
+      <DogParkCalendar />
     )}
 
     {showChat &&(

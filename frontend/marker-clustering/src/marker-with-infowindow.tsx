@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { AdvancedMarker, InfoWindow, useAdvancedMarkerRef } from '@vis.gl/react-google-maps';
-
+import smallDog from './smallDog.png'
+import bigDog from '.bigDog.png'
+//weswoof unique marker
 export const MarkerWithInfowindow = ({
   toggleStats,
   toggleCheckOut,
   toggleChat,
   toggleCalendar,
   toggleCheckIn,
-  toggleWindow
+  toggleWindow,
+  parkname
 }) => {
   const [infowindowOpen, setInfowindowOpen] = useState(false);
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [selection, setSelection] = useState('');
+
+
 
   useEffect(() => {
     if (infowindowOpen && marker) {
@@ -21,8 +26,90 @@ export const MarkerWithInfowindow = ({
 
   const handleMarkerClick = () => {
     console.log('hellomarker');
+    toggleStats()
     setInfowindowOpen(!infowindowOpen);
   };
+
+  const onGoogleMaps = (dogParkName) => {
+    // Local dictionary mapping dog park names to their coordinates
+    const dogParkCoordinates = {
+      'westwoof': '34.053935, -118.444793',
+      'Dog Park 2': '34.123456, -118.789012',
+      // Add more dog parks as needed
+    };
+
+    // Get the coordinates for the given dog park name
+    const coordinates = dogParkCoordinates[dogParkName];
+
+    if (coordinates) {
+      // Open Google Maps navigation link with coordinates
+      const googleMapsLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(coordinates)}`;
+
+      // Open the link in a new tab/window
+      window.open(googleMapsLink, '_blank');
+    } else {
+      console.error(`Coordinates not found for dog park: ${dogParkName}`);
+      // Handle the case where the coordinates are not found for the given dog park
+    }
+  };
+
+  const onAppleMaps = (dogParkName) => {
+    // Local dictionary mapping dog park names to their coordinates
+    const dogParkCoordinates = {
+      'westwoof': '34.053935, -118.444793',
+      'Dog Park 2': '34.123456, -118.789012',
+      // Add more dog parks as needed
+    };
+
+    // Get the coordinates for the given dog park name
+    const coordinates = dogParkCoordinates[dogParkName];
+
+    if (coordinates) {
+      // Open Apple Maps navigation link with coordinates
+      const appleMapsLink = `https://maps.apple.com/?daddr=${encodeURIComponent(coordinates)}`;
+
+      // Open the link in a new tab/window
+      window.open(appleMapsLink, '_blank');
+    } else {
+      console.error(`Coordinates not found for dog park: ${dogParkName}`);
+      // Handle the case where the coordinates are not found for the given dog park
+    }
+  };
+
+  const [bigParkDataMarker, setBigParkDataMarker]=useState([])
+
+  const [smallParkDataMarker, setSmallParkDataMarker]=useState([])
+
+  useEffect(() => {
+    try {
+     const response = fetch('http://localhost:3029/updateParkStats', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({
+         parkName: 'westwoof',
+
+         // Include other fields as needed
+       }),
+     });
+
+     if (!response.ok) {
+       console.error('Failed to update park stats:', response.statusText);
+       // Handle the error here if needed
+     } else {
+       const data = response.json();
+       console.log(data.activeDogsBigPark); // Assuming this field exists in your MongoDB schema
+       // Update the state with the received data
+       setBigParkDataMarker(data.activeDogsBigPark.length);
+       setSmallParkDataMarker(data.activeDogsSmallPark.length);
+       console.log(bigParkData);
+     }
+   } catch (error) {
+     console.error('Error during toggleStats:', error);
+     // Handle the error here if needed
+   }
+ }, [parkname]);
 
   return (
     <div style={{ pointerEvents: 'initial' }}>
@@ -43,6 +130,7 @@ export const MarkerWithInfowindow = ({
         <InfoWindow anchor={marker} maxWidth={200}>
           {/* InfoWindow content */}
           <code style={{ color: 'black', whiteSpace: 'nowrap' }}>Westwoof Dog Park</code>
+
           <div>
             <a style={{ cursor: 'pointer', color: 'blue' }} onClick={() => toggleCheckIn('weswoof')}>
               Check In
@@ -51,16 +139,22 @@ export const MarkerWithInfowindow = ({
           <div style={{ cursor: 'pointer', color: 'blue' }} onClick={() => toggleCheckOut('weswoof')}>
             Check Out
           </div>
-          <code style={{ color: 'black', whiteSpace: 'nowrap' }}>Big Dogs: 10 </code>
-          <code style={{ color: 'black', whiteSpace: 'nowrap' }}>Small Dogs: 5</code>
+          <code style={{ color: 'black', whiteSpace: 'nowrap' }}>Big Dogs: {bigParkDataMarker}</code>
+          <code style={{ color: 'black', whiteSpace: 'nowrap' }}>Small Dogs: {smallParkDataMarker}</code>
           <div style={{ cursor: 'pointer', color: 'blue' }} onClick={() => toggleStats('westwoof')}>
-            Dog Roster
+            Active Dogs
           </div>
           <div style={{ cursor: 'pointer', color: 'blue' }} onClick={() => toggleChat('westwoof')}>
             Chat
           </div>
           <div style={{ cursor: 'pointer', color: 'blue' }} onClick={() => toggleCalendar('westwoof')}>
             Calendar
+          </div>
+          <div style={{ cursor: 'pointer', color: 'blue' }} onClick={() => onAppleMaps('westwoof')}>
+            Apple Maps
+          </div>
+          <div style={{ cursor: 'pointer', color: 'blue' }} onClick={() => onGoogleMaps('westwoof')}>
+            Google Maps
           </div>
         </InfoWindow>
       )}

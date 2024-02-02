@@ -271,7 +271,8 @@ app.post('/checkin', async (req, res) => {
 // Existing route for updating park stats
 app.post('/updateParkStats', async (req, res) => {
   try {
-    const { parkName, newStats /* other fields */ } = req.body;
+    const { parkName, newStats, /* other fields */ } = req.body;
+    console.log(req.body);
 
     // Find the dog park in the database
     const dogPark = await client.db("barkit").collection("dogparks").findOne({ parkname: parkName });
@@ -280,18 +281,25 @@ app.post('/updateParkStats', async (req, res) => {
       return res.status(404).json({ message: 'Dog park not found' });
     }
 
+    // Prepare the update object with the provided fields
+    const updateObject = {
+      $set: {
+        parkname: dogPark.parkname,
+        activeDogsBigPark: dogPark.activeDogsBigPark,
+        activeDogsSmallPark: dogPark.activeDogsSmallPark,
+        timestamp: new Date(),
+      },
+    };
+
+    // Add newStats to the updateObject if it is provided
+    if (newStats) {
+      updateObject.$set.stats = newStats;
+    }
+
     // Save the current state to the dogparks collection
     await client.db("barkit").collection("dogparks").updateOne(
       { parkname: parkName },
-      {
-        $set: {
-          parkname: dogPark.parkname,
-          activeDogsBigPark: dogPark.activeDogsBigPark,
-          activeDogsSmallPark: dogPark.activeDogsSmallPark,
-          stats: newStats,
-          timestamp: new Date(),
-        },
-      },
+      updateObject,
       { upsert: true }
     );
 
@@ -309,6 +317,7 @@ app.post('/updateParkStats', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // Modified cleanup function with historical data integration
 setInterval(async () => {
