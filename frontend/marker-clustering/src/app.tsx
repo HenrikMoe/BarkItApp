@@ -949,7 +949,7 @@ return (
     )}
 
     {showChat &&(
-       <Chat dogParkName={livePark} />
+       <Chat dogParkName={livePark} username={username} />
      )}
 
     {showHistoricalDogParks && (

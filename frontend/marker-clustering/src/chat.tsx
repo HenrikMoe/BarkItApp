@@ -9,37 +9,62 @@ interface ChatProps {
   dogParkName: string;
 }
 
-const Chat: React.FC<ChatProps> = ({ dogParkName }) => {
+const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
 
-  // Dummy function to simulate receiving new chat messages
   const receiveMessage = (message: Message) => {
     setChatMessages((prevMessages) => [...prevMessages, message]);
   };
 
-  // Dummy function to simulate sending a chat message
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (newMessage.trim() !== '') {
-      // You can replace this with actual logic to send messages to the server
-      receiveMessage({ user: 'User', message: newMessage });
+      receiveMessage({ user: username, message: newMessage });
+
+      try {
+        await fetch(`http://localhost:3029/sendmessage/${dogParkName}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ user: username, message: newMessage }),
+        });
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+
       setNewMessage('');
     }
   };
 
-  // Dummy useEffect to simulate receiving new messages
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Simulate receiving a new message every 5 seconds
-      receiveMessage({ user: 'OtherUser', message: 'Hello!' });
-    }, 5000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     receiveMessage({ user: 'OtherUser', message: 'Hello!' });
+  //   }, 5000);
+  //
+  //   return () => clearInterval(interval);
+  // }, []);
 
-    return () => clearInterval(interval);
-  }, []);
+  useEffect(() => {
+    const chatRequestInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`http://localhost:3029/chat/${dogParkName}`);
+        if (response.ok) {
+          const data = await response.json();
+          setChatMessages(data.messages);
+        } else {
+          console.error('Failed to fetch chat:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error during chat request:', error);
+      }
+    }, 1000);
+
+    return () => clearInterval(chatRequestInterval);
+  }, [dogParkName]);
 
   const chatRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to the bottom of the chat when new messages arrive
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -48,7 +73,6 @@ const Chat: React.FC<ChatProps> = ({ dogParkName }) => {
 
   return (
     <div>
-      {/* Upper Section: Display Chat Messages */}
       <div
         ref={chatRef}
         style={{
@@ -65,7 +89,6 @@ const Chat: React.FC<ChatProps> = ({ dogParkName }) => {
         ))}
       </div>
 
-      {/* Lower Section: Type and Submit Message */}
       <div style={{ marginTop: '10px' }}>
         <input
           type="text"
