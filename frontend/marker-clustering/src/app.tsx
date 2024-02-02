@@ -22,8 +22,6 @@ import {
 import {MarkerWithInfowindow} from './marker-with-infowindow';
 
 
-
-
 import mapStyle from './mapStyle.ts';
 
 const MapTypeId = {
