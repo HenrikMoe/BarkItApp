@@ -720,24 +720,26 @@ app.post('/forgotpassword', async (req, res) => {
 
 
   // Handler to send messages to the 'dogParkChats' database object
-app.post('/sendmessage/:dogParkName', async (req, res) => {
-  try {
-    const { dogParkName } = req.params;
-    const { user, message } = req.body;
+  app.post('/sendmessage/:dogParkName', async (req, res) => {
+    try {
+      const { dogParkName } = req.params;
+      const { user, message } = req.body;
 
-    // Insert the new message into the 'dogParkChats' collection
-    await client.db('barkit').collection('dogParkChats').updateOne(
-      { dogParkName },
-      { $push: { messages: { user, message } } },
-      { upsert: true } // Create the document if it doesn't exist
-    );
+      const timestamp = new Date().toISOString();
 
-    res.status(200).json({ message: 'Message sent successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
+      // Insert the new message with timestamp into the 'dogParkChats' collection
+      await client.db('barkit').collection('dogParkChats').updateOne(
+        { dogParkName },
+        { $push: { messages: { user, message, timestamp } } },
+        { upsert: true } // Create the document if it doesn't exist
+      );
+
+      res.status(200).json({ message: 'Message sent successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  });
 
 // Existing handler to get chat messages for a specific dog park
 app.get('/chat/:dogParkName', async (req, res) => {

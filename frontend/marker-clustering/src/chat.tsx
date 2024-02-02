@@ -3,10 +3,12 @@ import React, { useState, useEffect, useRef } from 'react';
 interface Message {
   user: string;
   message: string;
+  timestamp: string;
 }
 
 interface ChatProps {
   dogParkName: string;
+  username: string;
 }
 
 const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
@@ -19,7 +21,7 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
 
   const sendMessage = async () => {
     if (newMessage.trim() !== '') {
-      receiveMessage({ user: username, message: newMessage });
+      receiveMessage({ user: username, message: newMessage, timestamp: new Date().toISOString() });
 
       try {
         await fetch(`http://localhost:3029/sendmessage/${dogParkName}`, {
@@ -36,14 +38,6 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
       setNewMessage('');
     }
   };
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     receiveMessage({ user: 'OtherUser', message: 'Hello!' });
-  //   }, 5000);
-  //
-  //   return () => clearInterval(interval);
-  // }, []);
 
   useEffect(() => {
     const chatRequestInterval = setInterval(async () => {
@@ -85,6 +79,9 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
         {chatMessages.map((message, index) => (
           <div key={index}>
             <strong>{message.user}:</strong> {message.message}
+            <div style={{ fontSize: '10px', color: '#888' }}>
+              {new Date(message.timestamp).toLocaleString()}
+            </div>
           </div>
         ))}
       </div>
