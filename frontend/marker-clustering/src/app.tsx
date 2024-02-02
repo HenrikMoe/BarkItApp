@@ -327,8 +327,13 @@ const App: React.FC = () =>{
       if (response.ok) {
         const data = await response.json();
         console.log(data.message);
+
+        // Set the username in the state if available in the response
+        if (data.username) {
+          setUsername(data.username);
+        }
+
         setUserSignedIn(true);
-        setUsername(username); // Set the username in the state
       } else {
         console.error('Sign-in failed:', response.statusText);
       }
@@ -336,6 +341,7 @@ const App: React.FC = () =>{
       console.error('Error during sign-in:', error);
     }
   };
+
 
   const handleSignUp = async (username: string, email: string, password: string, dogData: Dog) => {
   try {
@@ -792,14 +798,35 @@ const [showSignInForm, setShowSignInForm] = useState(false);
 
    }, []);
 
-   const handleResetPassword = async (newPassword) => {
-   // Implement your logic to reset the password
-   // This can involve making an API call to your server with the new password and email
-   // ...
 
-   // After resetting the password, switch resetPw back to false
-   setResetPw(false);
- };
+
+   const handleResetPassword = async (resetPassword) => {
+     try {
+       // Make an API call to your backend to reset the password
+       const response = await fetch('http://localhost:3029/resetpassword', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({
+           email: emailForReset,
+           newPassword: resetPassword, // Use the state variable that holds the new password
+         }),
+       });
+
+       if (response.ok) {
+         // Password reset successful, you can handle it accordingly
+         console.log('Password reset successfully');
+         setResetPw(false)
+       } else {
+         // Handle password reset failure
+         console.error('Failed to reset password:', response.statusText);
+       }
+     } catch (error) {
+       // Handle other errors (e.g., network issues)
+       console.error('Error during password reset:', error);
+     }
+   };
 
 return (
 
@@ -1083,10 +1110,14 @@ return (
         <h4 style={{ textAlign: 'left', marginBottom: '0px' }}> YikYak meets Surfline for dog parks.</h4>
 
         {resetPw ? (
+                  <div>
                      <PasswordResetForm
                        email={emailForReset}
                        onResetPassword={handleResetPassword}
                      />
+                     <button onClick={() => setResetPw(false)}>Back</button>
+                  </div>
+
                    ) : (
         <>
         <div style={{ marginBottom: '20px' }}>

@@ -113,7 +113,7 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSignIn, onForgotPassword }) =
         // Sign-in Form
         <form style={formStyle} onSubmit={handleSignIn}>
           <label style={labelStyle}>
-            Username:
+            Username or Email:
             <input type="text" value={username} style={inputStyle} onChange={(e) => setUsername(e.target.value)} />
           </label>
           <br />

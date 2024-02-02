@@ -109,13 +109,17 @@ app.post('/signup', async (req, res) => {
 
 
 // Sign-in endpoint (replace with actual logic)
-// Sign-in endpoint
 app.post('/signin', async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // Check if the user exists
-    const user = await client.db("barkit").collection("users").findOne({ username });
+    // Check if the user exists by username or email
+    var user = await client.db("barkit").collection("users").findOne({
+      $or: [
+        { username: username },
+        { email: username },
+      ],
+    });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -126,13 +130,14 @@ app.post('/signin', async (req, res) => {
       return res.status(401).json({ message: 'Invalid password' });
     }
 
-    // If everything is correct, send a success response
-    res.status(200).json({ message: 'Sign-in successful' });
+    // If everything is correct, send a success response with the username
+    res.status(200).json({ message: 'Sign-in successful', username: user.username });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 
 
@@ -685,7 +690,37 @@ app.post('/forgotpassword', async (req, res) => {
     });
 
 
+  app.post('/resetpassword', async (req, res) => {
+    try {
+      const { email, newPassword } = req.body;
 
+      console.log('hello')
+      console.log(email, newPassword)
+
+      // Check if the email exists
+      const user = await client.db('barkit').collection('users').findOne({ email });
+
+      console.log(user)
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found or invalid email' });
+      }
+
+      // Hash the new password before storing it
+    //  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update the user's password in the database
+      await client.db('barkit').collection('users').updateOne(
+        { email },
+        { $set: { password: newPassword } }
+      );
+
+      res.status(200).json({ message: 'Password reset successful' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  });
 
 // Connect to MongoDB and start the Express server
 connectMongoDB().then(() => {
