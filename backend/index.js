@@ -10,6 +10,7 @@ const nodemailer = require('nodemailer');
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = process.env.MONGO_URI;
+const { EMAIL_USER, EMAIL_PASSWORD } = process.env; // Use environment variables
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -638,57 +639,52 @@ app.post('/removedog', async (req, res) => {
 
 
 // Backend (Node.js + Express) Code
-
-// Forgot password endpoint
 app.post('/forgotpassword', async (req, res) => {
-  console.log('hola')
   try {
-    const { username, email } = req.body;
-    console.log(email)
-    // Fetch user from the database based on username and email
-    var user = await client.db("barkit").collection("users").findOne({ email});
-    // if (!user) {
-    //   user = await client.db("barkit").collection("users").findOne({ username});
-    // }
+    const { email } = req.body;
+
+    // Fetch user from the database based on email
+    const user = await client.db("barkit").collection("users").findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found or invalid email' });
     }
 
     const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user: 'your-email@gmail.com', // Replace with your Gmail email address
-            pass: 'your-password', // Replace with your Gmail app password
-          },
-        });
-
-        // URL with username and email as query parameters
-        const resetUrl = `http://localhost:3029?resetPw=${true}&email=${user.email}`;
-
-        const mailOptions = {
-          from: 'your-email@gmail.com', // Replace with your Gmail email address
-          to: user.email,
-          subject: 'Password Reset',
-          text: `Click the following link to reset your password: ${resetUrl}`,
-        };
-
-        // Send the email
-        transporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-            console.error(error);
-            return res.status(500).json({ message: 'Error sending password reset email' });
-          }
-
-          console.log('Email sent: ' + info.response);
-          res.status(200).json({ message: 'Password reset link sent successfully' });
-        });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
-      }
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+      secure: false, // Use SSL
     });
 
+    // URL with username and email as query parameters
+    const resetUrl = `http://localhost:3029?resetPw=true&email=${user.email}`;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: 'Password Reset',
+      text: `Click the following link to reset your password: ${resetUrl}`,
+    };
+
+    // Send the email
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Error sending password reset email' });
+      }
+
+      console.log('Email sent: ' + info.response);
+      res.status(200).json({ message: 'Password reset link sent successfully' });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
   app.post('/resetpassword', async (req, res) => {
     try {
