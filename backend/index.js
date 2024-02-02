@@ -277,6 +277,7 @@ app.post('/updateParkStats', async (req, res) => {
     // Find the dog park in the database
     const dogPark = await client.db("barkit").collection("dogparks").findOne({ parkname: parkName });
 
+    console.log(dogPark)
     if (!dogPark) {
       return res.status(404).json({ message: 'Dog park not found' });
     }
@@ -295,6 +296,7 @@ app.post('/updateParkStats', async (req, res) => {
     if (newStats) {
       updateObject.$set.stats = newStats;
     }
+    console.log(updateObject)
 
     // Save the current state to the dogparks collection
     await client.db("barkit").collection("dogparks").updateOne(
@@ -302,6 +304,9 @@ app.post('/updateParkStats', async (req, res) => {
       updateObject,
       { upsert: true }
     );
+
+    console.log(dogPark)
+
 
     // Get the active dogs in the big and small parks
     const activeDogsBigPark = dogPark.activeDogsBigPark || [];

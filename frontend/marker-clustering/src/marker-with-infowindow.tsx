@@ -10,7 +10,8 @@ export const MarkerWithInfowindow = ({
   toggleCalendar,
   toggleCheckIn,
   toggleWindow,
-  parkname
+  parkname,
+
 }) => {
   const [infowindowOpen, setInfowindowOpen] = useState(false);
   const [markerRef, marker] = useAdvancedMarkerRef();
@@ -26,7 +27,7 @@ export const MarkerWithInfowindow = ({
 
   const handleMarkerClick = () => {
     console.log('hellomarker');
-    toggleStats()
+    // toggleStats()
     setInfowindowOpen(!infowindowOpen);
   };
 
@@ -81,35 +82,51 @@ export const MarkerWithInfowindow = ({
   const [smallParkDataMarker, setSmallParkDataMarker]=useState([])
 
   useEffect(() => {
-    try {
-     const response = fetch('http://localhost:3029/updateParkStats', {
-       method: 'POST',
-       headers: {
-         'Content-Type': 'application/json',
-       },
-       body: JSON.stringify({
-         parkName: 'westwoof',
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://localhost:3029/updateParkStats', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            parkName: 'westwoof',
+            // Include other fields as needed
+          }),
+        });
 
-         // Include other fields as needed
-       }),
-     });
+        if (!response.ok) {
+          console.error('Failed to update park stats:', response.statusText);
+          // Handle the error here if needed
+          return;
+        }
 
-     if (!response.ok) {
-       console.error('Failed to update park stats:', response.statusText);
-       // Handle the error here if needed
-     } else {
-       const data = response.json();
-       console.log(data.activeDogsBigPark); // Assuming this field exists in your MongoDB schema
-       // Update the state with the received data
-       setBigParkDataMarker(data.activeDogsBigPark.length);
-       setSmallParkDataMarker(data.activeDogsSmallPark.length);
-       console.log(bigParkData);
-     }
-   } catch (error) {
-     console.error('Error during toggleStats:', error);
-     // Handle the error here if needed
-   }
- }, [parkname]);
+        const data = await response.json();
+        console.log(data);
+
+        console.log(data.activeDogsBigPark); // Assuming this field exists in your MongoDB schema
+        // Update the state with the received data
+        setBigParkDataMarker(data.activeDogsBigPark.length);
+        setSmallParkDataMarker(data.activeDogsSmallPark.length);
+        console.log(bigParkData);
+      } catch (error) {
+        console.error('Error during toggleStats:', error);
+        // Handle the error here if needed
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
+//  useEffect(() => {
+// console.log()
+// }, []);
+
+
+ // <div style={{ cursor: 'pointer', color: 'blue' }} onClick={() => toggleCalendar('westwoof')}>
+ //   Calendar
+ // </div>
 
   return (
     <div style={{ pointerEvents: 'initial' }}>
