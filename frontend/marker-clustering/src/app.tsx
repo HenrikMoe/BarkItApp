@@ -22,6 +22,7 @@ import {
 import {MarkerWithInfowindow} from './marker-with-infowindow';
 
 
+
 import mapStyle from './mapStyle.ts';
 
 const MapTypeId = {
@@ -925,9 +926,14 @@ return (
         </label>
         <br />
         <label>
-          Dog Image:
-          <input type="file" accept="image/*" onChange={handleDogImageChange} style={{ width: '100%' }} />
-        </label>
+    Dog Image:
+    <input
+      type="file"
+      accept="image/*,video/quicktime"
+      onChange={handleDogImageChange}
+      style={{ width: '100%' }}
+    />
+  </label>
         <br />
         <button type="button" onClick={()=>handleEditDogClick()}>
           Edit Dog

@@ -115,7 +115,12 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSignUp }) => {
             <br />
             <label>
               Dog Image:
-              <input type="file" accept="image/*" onChange={handleDogImageChange} style={{ width: '100%' }} />
+              <input
+                type="file"
+                accept="image/*,video/quicktime"
+                onChange={handleDogImageChange}
+                style={{ width: '100%' }}
+              />
             </label>
             <br />
 
