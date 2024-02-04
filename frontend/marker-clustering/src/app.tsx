@@ -10,6 +10,8 @@ import PasswordResetForm from './PasswordResetForm'; // New PasswordResetForm co
 import DogParkCalendar from './DogParkCalendar'
 import type { Marker } from '@googlemaps/markerclusterer';
 import trees from './trees';
+import heic2any from 'heic2any';
+
 import {
   AdvancedMarker,
   APIProvider,
@@ -353,8 +355,12 @@ const App: React.FC = () =>{
       size: dogData.size,
       energy: dogData.energy,
       age: dogData.age.toString(),
-      dogImage: dogData.image,
     };
+
+    if (dogImage) {
+      const base64Image = await convertImageToBase64(dogData.image);
+      requestBody.dogImage = base64Image;
+    }
 
     const response = await fetch('http://localhost:3029/signup', {
       method: 'POST',
@@ -443,6 +449,7 @@ const App: React.FC = () =>{
 
      if (response.ok) {
        const data: UserDogsResponse = await response.json();
+       console.log(data.userDogs)
        return data.userDogs;
      } else {
        console.error('Failed to fetch user dogs:', response.statusText);
@@ -456,10 +463,17 @@ const App: React.FC = () =>{
 
  const checkInPark = async (dog, side) => {
    try {
-     const { dogName, breed, size, energy, age, imageUrl } = dog;
+     const { dogName, breed, size, energy, age, dogImage } = dog;
 
      // Assuming 'username' is globally available
-      // Replace with the actual username
+     // Replace with the actual username
+     console.log(dogImage)
+     if (dogImage) {
+       const base64Image = await convertImageToBase64(dogImage);
+       dog.dogImage = base64Image;
+     }
+
+     console.log(dog);
 
      const response = await fetch('http://localhost:3029/checkin', {
        method: 'POST',
@@ -467,9 +481,9 @@ const App: React.FC = () =>{
          'Content-Type': 'application/json',
        },
        body: JSON.stringify({
-         dog: { dogName, breed, size, energy, age, imageUrl, username }, // Include 'username'
+         dog,
          park: 'westwoof',
-         side: side,
+         side,
          // Add other fields if needed
        }),
      });
@@ -532,23 +546,48 @@ const checkOutPark = async (dog, side) => {
   }, [userSignedIn, username]);
     // Render user dogs
     const renderUserDogs = () => {
-      if (userDogs.length === 0) {
-        return <p>No dogs found for the user.</p>;
-      }
+    if (userDogs.length === 0) {
+      return <p>No dogs found for the user.</p>;
+    }
 
-      return (
-        <div>
-          <h5 style={{ textAlign: 'left', marginBottom: '20px' }}>Your Dogs:</h5>
-          <ul>
-            {userDogs.map((dog, index) => (
-              <li key={index} >
-            {dog.dogImage}   {dog.dogName} <button onClick={() => toggleDogStats()} style={{ color: 'grey'}}>Stats</button>  <button style={{ color: 'grey'}}  onClick={() => toggleDogEdit(dog)}>Edit</button> <button  onClick={() => toggleDogRemove(dog)} style={{ color: 'grey'}}>Remove</button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      );
-    };
+    console.log(userDogs);
+
+    return (
+      <div>
+        <h5 style={{ textAlign: 'left', marginBottom: '20px' }}>Your Dogs:</h5>
+        <ul>
+          {userDogs.map((dog, index) => (
+            <li key={index}>
+
+              <img
+                src={`data:image/png;base64,${dog.dogImage}`}
+                alt={`Img`}
+                style={{ maxWidth: '100%', height: '100px', width: '100px' }}
+              />
+              {dog.dogName}{' '}
+              <button onClick={() => toggleDogStats()} style={{ color: 'grey' }}>
+                Stats
+              </button>{' '}
+              <button
+                style={{ color: 'grey' }}
+                onClick={() => toggleDogEdit(dog)}
+              >
+                Edit
+              </button>{' '}
+              <button
+                onClick={() => toggleDogRemove(dog)}
+                style={{ color: 'grey' }}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+
 
 
     const [historicalDogParks, setHistoricalDogParks] = useState([]);
@@ -627,6 +666,7 @@ const checkOutPark = async (dog, side) => {
       const handleDogImageChange = (e: ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
         setDogImage(e.target.files[0]);
+        console.log(e.target.files[0])
       }
       };
 
@@ -659,10 +699,15 @@ const checkOutPark = async (dog, side) => {
           size,
           energy,
           age,
-          dogImage, // If dogImage is undefined, set it to null
+           // If dogImage is undefined, set it to null
         },
         // Add other fields if needed
       };
+
+      if (dogImage) {
+        const base64Image = await convertImageToBase64(dogImage);
+        requestData.dogData.dogImage = base64Image;
+      }
 
       console.log(requestData);
 
@@ -703,44 +748,59 @@ useEffect(() => {
    fetchData();
  }, [showAddDog, showEditDog, showRemoveDog]);
 
-   const handleEditDogClick = async () => {
-    try {
-      const requestData = {
-        username,
-        previousDogName,
-        dogData: {
-          dogName: dogName,
-          breed: breed,
-          size: size,
-          energy: energy,
-          age: age,
-          dogImage: dogImage, // If editedDogImage is undefined, set it to null
-        },
-        // Add other fields if needed
-      };
+ const handleEditDogClick = async () => {
+   try {
+     const requestData = {
+       username,
+       previousDogName,
+       dogData: {
+         dogName: dogName,
+         breed: breed,
+         size: size,
+         energy: energy,
+         age: age,
+       },
+     };
 
-      console.log(requestData);
+     // Convert the dogImage to base64
+     if (dogImage) {
+       const base64Image = await convertImageToBase64(dogImage);
+       requestData.dogData.dogImage = base64Image;
+     }
+     console.log(requestData);
 
-      const response = await fetch('http://localhost:3029/editdog', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
+     const response = await fetch('http://localhost:3029/editdog', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify(requestData),
+     });
 
-      if (response.ok) {
-        // Handle success, e.g., close the edit form and update data
-        setShowEditDog(false);
-        setShowHistoricalDogParks(true);
-        fetchUserDogs(username);
-      } else {
-        console.error('Failed to edit dog:', response.statusText);
-      }
-    } catch (error) {
-      console.error('Error during edit dog request:', error);
-    }
-  };
+     if (response.ok) {
+       // Handle success, e.g., close the edit form and update data
+       setShowEditDog(false);
+       setShowHistoricalDogParks(true);
+       fetchUserDogs(username);
+       console.log(response);
+     } else {
+       console.error('Failed to edit dog:', response.statusText);
+     }
+   } catch (error) {
+     console.error('Error during edit dog request:', error);
+   }
+ };
+
+ // Function to convert a file to base64
+ const convertToBase64 = (file) => {
+   return new Promise((resolve, reject) => {
+     const reader = new FileReader();
+     reader.readAsDataURL(file);
+     reader.onload = () => resolve(reader.result.split(',')[1]);
+     reader.onerror = (error) => reject(error);
+   });
+ };
+
 
   const handleRemoveDogClick = async () => {
   try {
@@ -826,6 +886,37 @@ const [showSignInForm, setShowSignInForm] = useState(false);
        console.error('Error during password reset:', error);
      }
    };
+
+   const convertImageToBase64 = async (file) => {
+  try {
+    if (file.type === 'image/heic') {
+      // Convert HEIC to base64 using heic2any for HEIC files
+      const arrayBuffer = await file.arrayBuffer();
+      const dataUrlBlob = await heic2any({ blob: new Blob([arrayBuffer]) });
+
+      // Convert the Blob to base64
+      const base64Image = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(dataUrlBlob);
+      });
+
+      return base64Image;
+    } else {
+      // For other image formats (e.g., PNG, JPG), use a FileReader
+      const base64Image = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+
+      return base64Image;
+    }
+  } catch (error) {
+    console.error('Error converting image to base64:', error);
+    return null;
+  }
+};
 
 return (
 
@@ -929,10 +1020,11 @@ return (
     Dog Image:
     <input
       type="file"
-      accept="image/*,video/quicktime"
+      accept="image/*,video/quicktime,image/heic"
       onChange={handleDogImageChange}
       style={{ width: '100%' }}
     />
+
   </label>
         <br />
         <button type="button" onClick={()=>handleEditDogClick()}>
@@ -1014,7 +1106,7 @@ return (
       <br />
       <label>
         Dog Image:
-        <input type="file" accept="image/*" onChange={handleDogImageChange} style={{ width: '100%' }} />
+        <input type="file" accept="image/*,video/quicktime,image/heic" onChange={handleDogImageChange} style={{ width: '100%' }} />
       </label>
       <br />
       <button type="button" onClick={()=>handleAddDogClick()}>Add Dog</button>
@@ -1217,6 +1309,7 @@ const RosterTable: React.FC<{ bigParkData: Dog[], smallParkData: Dog[] }> = ({ b
   console.log('Received bigParkData:', bigParkData);
   console.log('Received smallParkData:', smallParkData);
 
+
   return (
     <div style={{ overflowX: 'auto' }}>
     <div style={{ marginTop: '5px', textAlign: 'left', fontSize: '1.2em' }}>Big Park</div>
@@ -1238,8 +1331,13 @@ const RosterTable: React.FC<{ bigParkData: Dog[], smallParkData: Dog[] }> = ({ b
           {/* Example: */}
           {bigParkData.map((item) => (
             <tr key={item.dog.id}>
+            {console.log(item.dog.imageUrl)}
               <td>{item.dog.name}</td>
-              <td>{/* Dog pic */}</td>
+              <td><img
+                src={`data:image/png;base64,${item.dog.imageUrl}`}
+                alt={`Img`}
+                style={{ maxWidth: '100%', height: '50px', width: '50px' }}
+              /></td>
               <td>{item.dog.breed}</td>
               <td>{item.dog.size}</td>
               <td>{item.dog.energy}</td>
@@ -1269,7 +1367,11 @@ const RosterTable: React.FC<{ bigParkData: Dog[], smallParkData: Dog[] }> = ({ b
           {smallParkData.map((item) => (
             <tr key={item.dog.id}>
               <td>{item.dog.name}</td>
-              <td>{/* Dog pic */}</td>
+              <td><img
+                src={`data:image/png;base64,${item.dog.imageUrl}`}
+                alt={`Img`}
+                style={{ maxWidth: '100%', height: '100px', width: '100px' }}
+              /></td>
               <td>{item.dog.breed}</td>
               <td>{item.dog.size}</td>
               <td>{item.dog.energy}</td>

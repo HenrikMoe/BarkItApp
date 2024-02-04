@@ -11,6 +11,7 @@ const nodemailer = require('nodemailer');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = process.env.MONGO_URI;
 const { EMAIL_USER, EMAIL_PASSWORD } = process.env; // Use environment variables
+app.use(express.json({ limit: '10mb' })); // Adjust the limit accordingly
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -156,6 +157,7 @@ app.get('/userdogs', async (req, res) => {
 
     // If the user is found, return the user's dogs
     const userDogs = user.dogs || [];
+    console.log(userDogs)
     res.status(200).json({ userDogs });
   } catch (error) {
     console.error(error);
@@ -218,7 +220,7 @@ app.post('/checkin', async (req, res) => {
       size: dog.size,
       energy: dog.energy,
       age: dog.age,
-      imageUrl: dog.imageUrl,
+      imageUrl: dog.dogImage,
       checkinExpiration: new Date(Date.now() + 1.5 * 60 * 60 * 1000), // 1.5 hours expiration
       user: { username: dog.username }, // Include the username from the client
     };
@@ -585,7 +587,7 @@ app.post('/adddog', async (req, res) => {
 app.post('/editdog', async (req, res) => {
   try {
     const { username, previousDogName, dogData } = req.body;
-    console.log('hello')
+    console.log(dogData)
 
     // Find the user by username
     const user = await client.db("barkit").collection("users").findOne({ username });
@@ -608,6 +610,7 @@ console.log(previousDogName)
     // Update the dog details
     user.dogs[dogIndex] = dogData;
 
+    console.log(dogData)
     // Update the user in the database
     await client.db("barkit").collection("users").updateOne({ username }, { $set: { dogs: user.dogs } });
 
