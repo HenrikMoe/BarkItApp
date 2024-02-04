@@ -448,7 +448,9 @@ const App: React.FC = () =>{
      });
 
      if (response.ok) {
+       console.log(response)
        const data: UserDogsResponse = await response.json();
+       console.log('userdogs')
        console.log(data.userDogs)
        return data.userDogs;
      } else {
@@ -467,11 +469,7 @@ const App: React.FC = () =>{
 
      // Assuming 'username' is globally available
      // Replace with the actual username
-     console.log(dogImage)
-     if (dogImage) {
-       const base64Image = await convertImageToBase64(dogImage);
-       dog.dogImage = base64Image;
-     }
+
 
      console.log(dog);
 
@@ -536,6 +534,7 @@ const checkOutPark = async (dog, side) => {
         try {
           const dogs = await fetchUserDogs(username);
           setUserDogs(dogs);
+          console.log(dogs)
         } catch (error) {
           console.error('Error fetching user dogs:', error);
         }
@@ -1122,6 +1121,7 @@ return (
         >
         {userDogs.map((dog, index) => (
           <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
+            {console.log(dog)}
             <h3>{dog.dogName}'s Check In: <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkInPark(dog, 'big')}>Big Park</div>
             <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkInPark(dog, 'small')}>Small Park</div></h3>
 
@@ -1331,7 +1331,7 @@ const RosterTable: React.FC<{ bigParkData: Dog[], smallParkData: Dog[] }> = ({ b
           {/* Example: */}
           {bigParkData.map((item) => (
             <tr key={item.dog.id}>
-            {console.log(item.dog.imageUrl)}
+            {console.log(item.dog)}
               <td>{item.dog.name}</td>
               <td><img
                 src={`data:image/png;base64,${item.dog.imageUrl}`}
