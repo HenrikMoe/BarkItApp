@@ -122,7 +122,7 @@ export const MarkerWithInfowindow = ({
     };
 
     fetchData();
-  }, []);
+  }, [infowindowOpen]);
 
 
 //  useEffect(() => {
@@ -170,36 +170,31 @@ export const MarkerWithInfowindow = ({
            <div style={{ padding: '10px', borderRadius: '8px', overflowY: 'auto' }}>
              {/* Display additional information here */}
              {/* Example: */}
-             <code style={{ color: 'black', whiteSpace: 'nowrap',  fontSize: '14px', }}>Westwoof Dog Park</code>
-             <div>
-           <div style={{ color: 'black', whiteSpace: 'nowrap', fontSize: '16px' }}>
-             <img src={bigDog} alt="Big Dogs" style={{ height: '30px', width: '30px', marginRight: '5px' }} />
-             : <p style={{ fontSize: '16px', display: 'inline-block', marginTop: '-30px', marginLeft: '5px', marginRight: '5px' }}> {bigParkDataMarker}</p>
-             <img src={smallDog} alt="Small Dogs" style={{ height: '30px', width: '30px', marginRight: '5px' }} />
-             : <p style={{ fontSize: '16px', display: 'inline-block', marginTop: '-30px', marginLeft: '5px' , marginRight: '5px'}}> {smallParkDataMarker}</p>
-           </div>
-         </div>
-             <div>
-               <div>
-                 <a
-                   style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }}
-                   onClick={() => toggleCheckIn('westwoof')}
-                 >
-                   Check In Dog
-                 </a>
-               </div>
-               <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} onClick={() => toggleCheckOut('westwoof')}>
-                 Check Out Dog
-               </div>
-             </div>
-             <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} onClick={() => toggleStats('westwoof')}>
-               View Active Dogs
-             </div>
+             <code style={{ color: 'black', whiteSpace: 'nowrap',  fontSize: '14px', marginBottom: '10px'}}>Westwoof Dog Park:</code>
+
              <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }}>
              <img src={chat} alt="ch Dogs" style={{ height: '40px', width: '40px', marginRight: '10px' }} onClick={() => toggleChat('westwoof')} />
              <img src={appleMaps} alt="apple Dogs" style={{ height: '40px', width: '40px', marginRight: '10px' }} onClick={() => onAppleMaps('westwoof')}/>
              <img src={googleMaps} alt="google Dogs" style={{ height: '40px', width: '40px', marginRight: '5px' }} onClick={() => onGoogleMaps('westwoof')}/>
              </div>
+
+             <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '5px' }}>
+               <div >
+                 <a
+                   style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '5px' }}
+                   onClick={() => toggleCheckIn('westwoof')}
+                 >
+                   Check In Your Dog(s)
+                 </a>
+               </div>
+               <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} onClick={() => toggleCheckOut('westwoof')}>
+                 Check Out Your Dog(s)
+               </div>
+             </div>
+             <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} onClick={() => toggleStats('westwoof')}>
+               View Dogs At The Park
+             </div>
+
            </div>
          )}
        </InfoWindow>
