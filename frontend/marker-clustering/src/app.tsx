@@ -22,7 +22,8 @@ import {
 } from '@vis.gl/react-google-maps';
 
 import {MarkerWithInfowindow} from './marker-with-infowindow';
-
+console.log(process.env)
+const API_KEY = process.env.REACT_APP_GOOGLE_MAPS_CLIENT_ID
 
 
 import mapStyle from './mapStyle.ts';
