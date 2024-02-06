@@ -34,6 +34,10 @@ export const MarkerWithInfowindow = ({
      setShowInitialWindow(true);
    };
 
+   const backToPreview = () => {
+      setShowInitialWindow(true);
+    };
+
    const handleExpandClick = () => {
      setShowInitialWindow(false);
    };
@@ -167,36 +171,47 @@ export const MarkerWithInfowindow = ({
              </button>
            </div>
          ) : (
-           <div style={{ padding: '10px', borderRadius: '8px', overflowY: 'auto' }}>
-             {/* Display additional information here */}
-             {/* Example: */}
-             <code style={{ color: 'black', whiteSpace: 'nowrap',  fontSize: '14px', marginBottom: '10px'}}>Westwoof Dog Park:</code>
-
-             <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }}>
-             <img src={chat} alt="ch Dogs" style={{ height: '40px', width: '40px', marginRight: '10px' }} onClick={() => toggleChat('westwoof')} />
-             <img src={appleMaps} alt="apple Dogs" style={{ height: '40px', width: '40px', marginRight: '10px' }} onClick={() => onAppleMaps('westwoof')}/>
-             <img src={googleMaps} alt="google Dogs" style={{ height: '40px', width: '40px', marginRight: '5px' }} onClick={() => onGoogleMaps('westwoof')}/>
-             </div>
-
-             <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '5px' }}>
-               <div >
-                 <a
-                   style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '5px' }}
-                   onClick={() => toggleCheckIn('westwoof')}
-                 >
-                   Check In Your Dog(s)
-                 </a>
-               </div>
-               <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} onClick={() => toggleCheckOut('westwoof')}>
-                 Check Out Your Dog(s)
-               </div>
-             </div>
-             <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} onClick={() => toggleStats('westwoof')}>
-               View Dogs At The Park
-             </div>
-
+     <div style={{ display: 'flex', padding: '10px', borderRadius: '8px', overflowY: 'auto' }}>
+       {/* Display additional information here */}
+       {/* Example: */}
+       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'left' }}>
+         <code style={{ color: 'black', whiteSpace: 'nowrap', fontSize: '14px', marginBottom: '5px' }}>
+           Westwoof Dog Park:
+         </code>
+         <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '5px' }}>
+           <div>
+             <a
+               style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '5px' }}
+               onClick={() => toggleCheckIn('westwoof')}
+             >
+               Check In Dog(s)
+             </a>
            </div>
-         )}
+           <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} onClick={() => toggleCheckOut('westwoof')}>
+             Check Out Dog(s)
+           </div>
+         </div>
+         <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} onClick={() => toggleStats('westwoof')}>
+           View Active Dogs
+         </div>
+         <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} onClick={() => toggleStats('westwoof')}>
+         <button onClick={backToPreview} style={{ cursor: 'pointer', padding: '5px', borderRadius: '5px', backgroundColor: '#8fdf82', marginTop: '0px', fontSize: '14px' }}>
+           Back
+         </button>
+        </div>
+       </div>
+
+       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: '-30px', marginTop: '10px' }}>
+       <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }}>
+         <img src={chat} alt="ch Dogs" style={{ height: '40px', width: '40px', marginBottom: '5px' }} onClick={() => toggleChat('westwoof')} />
+         <img src={appleMaps} alt="apple Dogs" style={{ height: '40px', width: '40px', marginBottom: '5px' }} onClick={() => onAppleMaps('westwoof')} />
+         <img src={googleMaps} alt="google Dogs" style={{ height: '40px', width: '40px', marginBottom: '5px' }} onClick={() => onGoogleMaps('westwoof')} />
+       </div>
+
+       </div>
+     </div>
+   )}
+
        </InfoWindow>
      )}
    </div>
