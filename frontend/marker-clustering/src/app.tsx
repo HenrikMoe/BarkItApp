@@ -917,6 +917,38 @@ const [showSignInForm, setShowSignInForm] = useState(false);
     return null;
   }
 };
+const [dogStats, setDogStats] = useState([]);
+
+const fetchDogStats = async () => {
+  try {
+    const response = await fetch(`http://localhost:3029/dogStats?${username}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // body: JSON.stringify({
+      //   // Include any necessary parameters for the backend query
+      //   // For example, you might want to send the user's ID
+      //   username: username, // Replace with the actual user ID
+      // }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data.dogStats)
+      setDogStats(data.dogStats);
+    } else {
+      console.error('Failed to fetch dog stats:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error during fetch:', error);
+  }
+};
+
+useEffect(() => {
+  fetchDogStats();
+}, [showDogStats]); // Fetch dog stats when the component mounts
+
 
 return (
 
@@ -1173,25 +1205,22 @@ return (
             {showDogStats && (
               <div style={{ marginTop: '20px', textAlign: 'center' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <div
-                style={{ cursor: 'pointer', textDecoration: selectedMenu === 'breeds' ? 'underline' : 'none' }}
-                onClick={() => handleMenuClick('na')}
-              >
-              {userDogs.map((dog, index) => (
-                <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
-                  <h3>{dog.dogName}'s Park Stats</h3>
-                  <ul style={{ listStyle: 'none', padding: 0 }}>
-                    <li><strong>Time at Park This Week:</strong> <div style={{ marginLeft: '10px', display: 'inline-block' }}>5.7h</div></li>
-                    <li><strong>All Time at Park:</strong> <div style={{ marginLeft: '10px', display: 'inline-block' }}>125h</div></li>
-                    <li><strong>Park Breakdown</strong></li>
-                    <li><strong>Energy:</strong> {dog.energy}</li>
-                    <li><strong>Size:</strong> {dog.size}</li>
-                    <li><strong>Breed:</strong> {dog.breed}</li>
-                    <li><strong>Age:</strong> {dog.age} yrs</li>
-                  </ul>
-                </div>
-              ))}
-              </div>
+              <div>
+             {userDogs.map((dog, index) => (
+               <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
+                 <h3>{dog.dogName}'s Park Stats</h3>
+                 <ul style={{ listStyle: 'none', padding: 0 }}>
+                   <li><strong>Time at Park This Week:</strong> <div style={{ marginLeft: '10px', display: 'inline-block' }}>{dogStats.weeklyTime || 'N/A'} hours</div></li>
+                   <li><strong>All Time at Park:</strong> <div style={{ marginLeft: '10px', display: 'inline-block' }}>{dogStats.totalTime || 'N/A'} hours</div></li>
+                   <li><strong>Park Breakdown</strong></li>
+                   <li><strong>Energy:</strong> {dog.energy}</li>
+                   <li><strong>Size:</strong> {dog.size}</li>
+                   <li><strong>Breed:</strong> {dog.breed}</li>
+                   <li><strong>Age:</strong> {dog.age} yrs</li>
+                 </ul>
+               </div>
+             ))}
+           </div>
 
             </div>
 

@@ -777,6 +777,97 @@ app.get('/chat/:dogParkName', async (req, res) => {
   }
 });
 
+
+app.get('/dogStats', async (req, res) => {
+  try {
+    const { username } = req.query;
+
+    const user = await client.db("barkit").collection("users").findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const groupStage = {
+      $group: {
+        _id: { dogName: '$dogName', timestamp: '$timestamp' },
+        checkin: { $first: '$checkin' },
+        checkoutInfo: { $first: '$checkoutInfo' },
+        events: { $push: '$$ROOT' }
+      }
+    };
+
+    const projectStage = {
+      $project: {
+        _id: 0,
+        dogName: '$_id.dogName',
+        timestamp: '$_id.timestamp',
+        checkin: '$checkin',
+        checkoutInfo: '$checkoutInfo',
+        events: '$events'
+      }
+    };
+
+    const cursor = client.db("barkit").collection("historicalDogParks")
+      .aggregate([
+        {
+          $match: {
+            $or: [
+              { 'activeDogsBigPark.dog.user.username': username },
+              { 'checkoutInfo.dog.user.username': username },
+              { 'activeDogsSmallPark.dog.user.username': username },
+            ],
+          },
+        },
+        groupStage,
+        projectStage
+      ]);
+
+    //cursor.allowDiskUse(true);
+
+    const historicalDogParks = await cursor.toArray();
+
+    let totalTime = 0;
+    let weeklyTime = 0;
+    historicalDogParks.map(({ dogName, events }) => {
+
+
+      events.forEach(event => {
+        const checkinTime = new Date(event.timestamp);
+        const currentTime = new Date();
+
+        // Calculate time difference in hours
+        const timeDiffHours = (currentTime - checkinTime) / (1000 * 60 * 60);
+
+        //totalTime += timeDiffHours;
+        totalTime+=1
+        // Check if the checkin happened in the last week
+        if (timeDiffHours <= 7 * 24) {
+          // weeklyTime += timeDiffHours;
+          weeklyTime += 1;
+
+        }
+      });
+
+
+
+
+    });
+    const dogStats={
+
+      totalTime,
+      weeklyTime,
+    }
+
+
+    res.status(200).json({ dogStats });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
 // Connect to MongoDB and start the Express server
 connectMongoDB().then(() => {
   app.listen(port, () => {
