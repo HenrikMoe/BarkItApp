@@ -11,7 +11,8 @@ import DogParkCalendar from './DogParkCalendar'
 import type { Marker } from '@googlemaps/markerclusterer';
 import trees from './trees';
 import heic2any from 'heic2any';
-
+import { ring } from 'ldrs'
+ring.register('my-precious')
 import {
   AdvancedMarker,
   APIProvider,
@@ -63,6 +64,7 @@ const App: React.FC = () =>{
   const [username, setUsername] = useState<string>(''); // Add username state
 
   const [showStats, setShowStats] = useState(false);
+
 
   // useEffect(() => {
   //   // Load Google Maps API asynchronously
@@ -431,17 +433,13 @@ const App: React.FC = () =>{
   };
 
 
-  const [infowindowOpen, setInfowindowOpen] = useState(false);
+  // const [infowindowOpen, setInfowindowOpen] = useState(false);
+  //
+  // const toggleWindow = () => {
+  //   setInfowindowOpen(!infowindow)
+  // };
 
-  const toggleWindow = () => {
-    setInfowindowOpen(!infowindow)
-  };
 
-  useEffect(() => {
-     // Example: Check if the user is signed in
-     //const isUserSignedIn = /* Your logic to check if the user is signed in */;
-     //setUserSignedIn(isUserSignedIn);
-   }, []);
 
    type UserDogsResponse = {
      userDogs: Dog[];
@@ -479,11 +477,13 @@ const App: React.FC = () =>{
    }
  };
 
-const [loadingCheckIn, setLoadingCheckIn] = useState(false)
+const [loadingCheckInBig, setLoadingCheckInBig] = useState(false)
+const [loadingCheckInSmall, setLoadingCheckInSmall] = useState(false)
+
 
  const checkInPark = async (dog, side) => {
    try {
-     setLoadingCheckIn(true)
+     if(side==='big'){setLoadingCheckInBig(true)}else{setLoadingCheckInSmall(true)}
 
      const { dogName, breed, size, energy, age, dogImage } = dog;
 
@@ -515,7 +515,7 @@ const [loadingCheckIn, setLoadingCheckIn] = useState(false)
    } catch (error) {
      console.error('Error during check-in:', error);
    } finally {
-     setLoadingCheckIn(false)
+     if(side==='big'){setLoadingCheckInBig(false)}else{setLoadingCheckInSmall(false)}
    }
  };
 
@@ -547,8 +547,6 @@ const checkOutPark = async (dog, side) => {
   }
 };
 
-
-
  const [userDogs, setUserDogs] = useState<Dog[]>([]);
 
 
@@ -570,7 +568,7 @@ const checkOutPark = async (dog, side) => {
     // Render user dogs
     const renderUserDogs = () => {
     if (userDogs.length === 0) {
-      return <div>{userDogsLoading ? <div> Loading...</div> : <div>No dogs found for the user.</div>} </div>;
+      return <div>{userDogsLoading ? <div>   <my-precious color="white"></my-precious></div> : <div>No dogs found for the user.</div>} </div>;
     }
 
     console.log(userDogs);
@@ -579,7 +577,7 @@ const checkOutPark = async (dog, side) => {
       <div>
         <h5 style={{ textAlign: 'left', marginBottom: '20px' }}>Your Dogs:</h5>
         <ul>
-          {userDogsLoading ? <div>Loading..</div> :
+          {userDogsLoading ?  <my-precious color="white"></my-precious> :
           userDogs.map((dog, index) => (
             <li key={index}>
 
@@ -619,9 +617,10 @@ const checkOutPark = async (dog, side) => {
     const [showHistoricalDogParks, setShowHistoricalDogParks] = useState(true);
 
 
-
+    const [loadingUserHistory, setLoadingUserHistory] = useState(false)
     const getUserHistory = async (username) => {
   try {
+    setLoadingUserHistory(true)
     const response = await fetch(`http://localhost:3029/dogparkhistory?username=${username}`, {
       method: 'GET',
       headers: {
@@ -645,6 +644,8 @@ const checkOutPark = async (dog, side) => {
     }
   } catch (error) {
     console.error('Error during user history fetch:', error);
+  } finally {
+    setLoadingUserHistory(false)
   }
 };
 
@@ -1024,7 +1025,7 @@ return (
       disableDefaultUI={true}
         >
         <Markers points={trees} />
-        <MarkerWithInfowindow parkname={livePark} bigParkData={bigParkData} smallParkData={smallParkData} infowindowOpen={infowindowOpen} toggleWindow={toggleWindow} toggleStats={toggleStats} toggleCheckIn={toggleCheckIn} toggleCalendar={toggleCalendar} toggleCheckOut={toggleCheckOut} toggleChat={toggleChat}/>
+        <MarkerWithInfowindow parkname={livePark} bigParkData={bigParkData} smallParkData={smallParkData}   toggleStats={toggleStats} toggleCheckIn={toggleCheckIn} toggleCalendar={toggleCalendar} toggleCheckOut={toggleCheckOut} toggleChat={toggleChat}/>
       </Map>
     </APIProvider>
 
@@ -1042,7 +1043,7 @@ return (
         </div>
 
         {/* loading park data */}
-        {loadingParkData ? <div>Loading..</div> :   <RosterTable bigParkData={bigParkData} smallParkData={smallParkData} />}
+        {loadingParkData ? <div>  <my-precious color="white"></my-precious></div> :   <RosterTable bigParkData={bigParkData} smallParkData={smallParkData} />}
 
         {/* Your Stats Content Here */}
         {/* Content based on selected menu */}
@@ -1113,30 +1114,37 @@ return (
        <Chat dogParkName={livePark} username={username} />
      )}
 
-    {showHistoricalDogParks && (
-      <div style={{ overflowY: 'auto', maxHeight: '300px' }}>
-        {historicalDogParks.map((park, index) => (
-          <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
-            <h3>{username}'s History:</h3>
-            <p>Timestamp: {park.timestamp}</p>
-            <p>Check-in Event:</p>
-            {park.events.map((event, eventIndex) => (
-              <div key={eventIndex}>
-                {event.checkin && (
-                  <>
-                    <p>Dog Name: {event.dogName}</p>
-                    <p>Park Name: {event.parkname}</p>
-                    <p>Check-in Timestamp: {event.timestamp}</p>
-                    {/* Add other details from the check-in event */}
-                  </>
-                )}
-              </div>
-            ))}
-            {/* Additional rendering for other events like check-out can be added similarly */}
-          </div>
-        ))}
-      </div>
-    )}
+     {showHistoricalDogParks && (
+       <div style={{ overflowY: 'auto', maxHeight: '300px' }}>
+         {loadingUserHistory ? (
+           <div>
+             <my-precious color="white"></my-precious>
+           </div>
+         ) : (
+           historicalDogParks.map((park, index) => (
+             <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
+               <h3>{username}'s History:</h3>
+               <p>Timestamp: {park.timestamp}</p>
+               <p>Check-in Event:</p>
+               {park.events.map((event, eventIndex) => (
+                 <div key={eventIndex}>
+                   {event.checkin && (
+                     <>
+                       <p>Dog Name: {event.dogName}</p>
+                       <p>Park Name: {event.parkname}</p>
+                       <p>Check-in Timestamp: {event.timestamp}</p>
+                       {/* Add other details from the check-in event */}
+                     </>
+                   )}
+                 </div>
+               ))}
+               {/* Additional rendering for other events like check-out can be added similarly */}
+             </div>
+           ))
+         )}
+       </div>
+     )}
+
 
   {showAddDog && (<div>
       <h2>Add Dog</h2>
@@ -1187,20 +1195,20 @@ return (
             <h3>{dog.dogName}'s Check In: <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkInPark(dog, 'big')}>Big Park</div>
             <div
               style={{
-                opacity: loadingCheckIn ? 1 : 0,
+                opacity: loadingCheckInBig ? 1 : 0,
                 transition: 'opacity 1s ease-in-out',
               }}
             >
-              {loadingCheckIn ? 'Checking in...' : 'Done'}
+              {loadingCheckInBig ? 'Checking in...' : 'Done'}
             </div>
             <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkInPark(dog, 'small')}>Small Park</div></h3>
             <div
               style={{
-                opacity: loadingCheckIn ? 1 : 0,
+                opacity: loadingCheckInSmall ? 1 : 0,
                 transition: 'opacity 1s ease-in-out',
               }}
             >
-              {loadingCheckIn ? 'Checking in...' : 'Done'}
+              {loadingCheckInSmall ? 'Checking in...' : 'Done'}
             </div>
           </div>
         ))}
@@ -1229,20 +1237,21 @@ return (
             <h3>{dog.dogName}'s Check Out: <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkOutPark(dog, 'big')}>Big Park</div>
             <div
               style={{
-                opacity: loadingCheckIn ? 1 : 0,
+                opacity: loadingCheckInBig ? 1 : 0,
                 transition: 'opacity 1s ease-in-out',
               }}
             >
-              {loadingCheckOut ? 'Checking out...' : 'Done'}
+              {loadingCheckOutBig ? 'Checking out...' : 'Done'}
             </div>
             <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkOutPark(dog, 'small')}>Small Park</div></h3>
             <div
               style={{
-                opacity: loadingCheckIn ? 1 : 0,
+                opacity: loadingCheckInSmall
+                 ? 1 : 0,
                 transition: 'opacity 1s ease-in-out',
               }}
             >
-              {loadingCheckOut ? 'Checking out...' : 'Done'}
+              {loadingCheckOutSmall ? 'Checking out...' : 'Done'}
             </div>
 
           </div>
@@ -1272,7 +1281,7 @@ return (
                  <ul style={{ listStyle: 'none', padding: 0 }}>
                    <li><strong>Time at Park This Week:</strong> <div style={{ marginLeft: '10px', display: 'inline-block' }}>
                   {dogStatsLoading ? (
-                    <div>Loading Dog Stats...</div>
+                    <div>  <my-precious color="white"></my-precious></div>
                   ) : (
                     <>
                    {dogStats.weeklyTime || 'N/A'}
@@ -1280,7 +1289,7 @@ return (
                   )} hours</div></li>
                                  <li><strong>All Time at Park:</strong> <div style={{ marginLeft: '10px', display: 'inline-block' }}>
                                   {dogStatsLoading ? (
-                     <div>Loading Dog Stats...</div>
+                     <div>  <my-precious color="white"></my-precious></div>
                    ) : (
                      <>
                    {dogStats.totalTime || 'N/A'}

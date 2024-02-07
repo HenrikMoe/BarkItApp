@@ -1,5 +1,7 @@
 // SignInForm.tsx
 import React, { useState } from 'react';
+import { ring } from 'ldrs'
+ring.register('my-precious')
 
 type SignInFormProps = {
   onSignIn: (username: string, password: string) => void;
@@ -11,6 +13,8 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSignIn, onForgotPassword, loa
   const [password, setPassword] = useState('');
   const [emailForForgotPassword, setEmailForForgotPassword] = useState('');
   const [resetPasswordVisible, setResetPasswordVisible] = useState(false);
+
+
 
 
   const handleSignIn = (e: React.FormEvent) => {
@@ -28,6 +32,7 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSignIn, onForgotPassword, loa
     setResetPasswordVisible(false);
     setEmailForForgotPassword('');
   };
+
 
   const formStyle: React.CSSProperties = {
     maxWidth: '300px',
@@ -124,7 +129,10 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSignIn, onForgotPassword, loa
             <input type="password" value={password} style={inputStyle} onChange={(e) => setPassword(e.target.value)} />
           </label>
           <br />
-          {loadingSignIn ? <div>Loading...</div> :     <button
+          {loadingSignIn ?
+            <my-precious color="white"></my-precious>
+: //{...passParametersToCustomise}
+             <button
                 type="submit"
                 style={buttonStyle}
                 onMouseOver={(e) => (e.currentTarget.style = buttonHoverStyle)}

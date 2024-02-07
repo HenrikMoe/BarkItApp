@@ -5,6 +5,8 @@ import bigDog from './bigDog.png'
 import appleMaps from './apple.jpg'
 import googleMaps from './googlemap.png'
 import chat from './chat-118.png'
+import { ring } from 'ldrs'
+ring.register('my-precious')
 //weswoof unique marker
 export const MarkerWithInfowindow = ({
   toggleStats,
@@ -12,7 +14,6 @@ export const MarkerWithInfowindow = ({
   toggleChat,
   toggleCalendar,
   toggleCheckIn,
-  toggleWindow,
   parkname,
 
 }) => {
@@ -20,6 +21,7 @@ export const MarkerWithInfowindow = ({
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [selection, setSelection] = useState('');
   const [showInitialWindow, setShowInitialWindow] = useState(true);
+
 
 
 
@@ -91,9 +93,11 @@ export const MarkerWithInfowindow = ({
 
   const [smallParkDataMarker, setSmallParkDataMarker]=useState([])
 
+  const [loadingDogCount, setLoadingDogCount] = useState(false)
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoadingDogCount(true)
         const response = await fetch('http://localhost:3029/updateParkStats', {
           method: 'POST',
           headers: {
@@ -122,6 +126,8 @@ export const MarkerWithInfowindow = ({
       } catch (error) {
         console.error('Error during toggleStats:', error);
         // Handle the error here if needed
+      } finally {
+        setLoadingDogCount(false)
       }
     };
 
@@ -161,9 +167,9 @@ export const MarkerWithInfowindow = ({
              <div>
              <div style={{ color: 'black', whiteSpace: 'nowrap', fontSize: '16px' }}>
                <img src={bigDog} alt="Big Dogs" style={{ height: '30px', marginTop: '0px', width: '30px', marginRight: '5px' }} />
-               : <p style={{ fontSize: '16px', display: 'inline-block', marginTop: '0px', marginLeft: '5px', marginRight: '5px' }}> {bigParkDataMarker}</p>
+               : <p style={{ fontSize: '16px', display: 'inline-block', marginTop: '0px', marginLeft: '5px', marginRight: '5px' }}> {loadingDogCount ? <my-precious color="black"></my-precious>: bigParkDataMarker}</p>
                <img src={smallDog} alt="Small Dogs" style={{ height: '30px', marginTop: '0px', width: '30px', marginRight: '5px' }} />
-               : <p style={{ fontSize: '16px', display: 'inline-block', marginTop: '0px', marginLeft: '5px', marginRight: '5px' }}> {smallParkDataMarker}</p>
+               : <p style={{ fontSize: '16px', display: 'inline-block', marginTop: '0px', marginLeft: '5px', marginRight: '5px' }}> {loadingDogCount ? <my-precious color="black"></my-precious>: smallParkDataMarker}  </p>
              </div>
              </div>
              <button onClick={handleExpandClick} style={{ cursor: 'pointer', padding: '5px', borderRadius: '5px', backgroundColor: '#8fdf82', marginTop: '0px', fontSize: '14px' }}>
@@ -218,3 +224,5 @@ export const MarkerWithInfowindow = ({
  );
 
 }
+
+export default MarkerWithInfowindow;
