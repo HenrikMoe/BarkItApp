@@ -6,15 +6,17 @@ type SignInFormProps = {
   onForgotPassword: (email: string, username: string) => void;
 };
 
-const SignInForm: React.FC<SignInFormProps> = ({ onSignIn, onForgotPassword }) => {
+const SignInForm: React.FC<SignInFormProps> = ({ onSignIn, onForgotPassword, loadingSignIn }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [emailForForgotPassword, setEmailForForgotPassword] = useState('');
   const [resetPasswordVisible, setResetPasswordVisible] = useState(false);
 
+
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
     onSignIn(username, password);
+
   };
 
   const handleForgotPassword = (e: React.FormEvent) => {
@@ -122,14 +124,16 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSignIn, onForgotPassword }) =
             <input type="password" value={password} style={inputStyle} onChange={(e) => setPassword(e.target.value)} />
           </label>
           <br />
-          <button
-            type="submit"
-            style={buttonStyle}
-            onMouseOver={(e) => (e.currentTarget.style = buttonHoverStyle)}
-            onMouseOut={(e) => (e.currentTarget.style = buttonStyle)}
-          >
-            Sign In
-          </button>
+          {loadingSignIn ? <div>Loading...</div> :     <button
+                type="submit"
+                style={buttonStyle}
+                onMouseOver={(e) => (e.currentTarget.style = buttonHoverStyle)}
+                onMouseOut={(e) => (e.currentTarget.style = buttonStyle)}
+              >
+                Sign In
+              </button>
+            }
+
           <button style={buttonStyle} onClick={() => setResetPasswordVisible(true)}>
             Forgot Password?
           </button>

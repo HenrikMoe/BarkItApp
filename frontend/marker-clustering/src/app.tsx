@@ -94,6 +94,7 @@ const App: React.FC = () =>{
   // Assuming you have state variables like this in your component
   const [bigParkData, setBigParkData] = useState([]);
   const [smallParkData, setSmallParkData] = useState([]);
+  const [loadingParkData, setLoadingParkData] = useState(false)
 
   const toggleStats = async (park) => {
     try {
@@ -109,6 +110,7 @@ const App: React.FC = () =>{
       setShowRemoveDog(false)
       setShowEditDog(false)
 
+      setLoadingParkData(true)
 
       // Make a call to update park stats
       const response = await fetch('http://localhost:3029/updateParkStats', {
@@ -141,6 +143,8 @@ const App: React.FC = () =>{
     } catch (error) {
       console.error('Error during toggleStats:', error);
       // Handle the error here if needed
+    } finally {
+      setLoadingParkData(false)
     }
   };
 
@@ -316,8 +320,11 @@ const App: React.FC = () =>{
 
   const [userSignedIn, setUserSignedIn] = useState(false);
   const [dogs, setDogs] = useState<Dog[]>([]);
+  const [loadingSignIn, setLoadingSignIn] = useState(false)
+
   const handleSignIn = async (username: string, password: string) => {
     try {
+      setLoadingSignIn(true)
       const response = await fetch('http://localhost:3029/signin', {
         method: 'POST',
         headers: {
@@ -341,6 +348,9 @@ const App: React.FC = () =>{
       }
     } catch (error) {
       console.error('Error during sign-in:', error);
+    } finally {
+      setLoadingSignIn(false)
+
     }
   };
 
@@ -436,9 +446,12 @@ const App: React.FC = () =>{
    type UserDogsResponse = {
      userDogs: Dog[];
    };
+
+   const [userDogsLoading, setUserDogsLoading] = useState(false)
    // Function to fetch user's dogs
  const fetchUserDogs = async (username: string) => {
    try {
+     setUserDogsLoading(true)
      console.log(username)
      const response = await fetch(`http://localhost:3029/userdogs?username=${username}`, {
        method: 'GET',
@@ -461,16 +474,21 @@ const App: React.FC = () =>{
    } catch (error) {
      console.error('Error during fetch:', error);
      return [];
+   } finally {
+     setUserDogsLoading(false)
    }
  };
 
+const [loadingCheckIn, setLoadingCheckIn] = useState(false)
+
  const checkInPark = async (dog, side) => {
    try {
+     setLoadingCheckIn(true)
+
      const { dogName, breed, size, energy, age, dogImage } = dog;
 
      // Assuming 'username' is globally available
      // Replace with the actual username
-
 
      console.log(dog);
 
@@ -496,14 +514,17 @@ const App: React.FC = () =>{
      }
    } catch (error) {
      console.error('Error during check-in:', error);
+   } finally {
+     setLoadingCheckIn(false)
    }
  };
 
+const [loadingCheckOut, setLoadingCheckOut] = useState(false)
 
 const checkOutPark = async (dog, side) => {
   try {
     console.log(dog);
-
+    setLoadingCheckOut(true)
     const response = await fetch('http://localhost:3029/checkout', {
       method: 'POST',
       headers: {
@@ -521,6 +542,8 @@ const checkOutPark = async (dog, side) => {
     }
   } catch (error) {
     console.error('Error during check-out:', error);
+  } finally {
+    setLoadingCheckOut(false)
   }
 };
 
@@ -547,7 +570,7 @@ const checkOutPark = async (dog, side) => {
     // Render user dogs
     const renderUserDogs = () => {
     if (userDogs.length === 0) {
-      return <p>No dogs found for the user.</p>;
+      return <div>{userDogsLoading ? <div> Loading...</div> : <div>No dogs found for the user.</div>} </div>;
     }
 
     console.log(userDogs);
@@ -556,7 +579,8 @@ const checkOutPark = async (dog, side) => {
       <div>
         <h5 style={{ textAlign: 'left', marginBottom: '20px' }}>Your Dogs:</h5>
         <ul>
-          {userDogs.map((dog, index) => (
+          {userDogsLoading ? <div>Loading..</div> :
+          userDogs.map((dog, index) => (
             <li key={index}>
 
               <img
@@ -917,33 +941,35 @@ const [showSignInForm, setShowSignInForm] = useState(false);
     return null;
   }
 };
-const [dogStats, setDogStats] = useState([]);
+
+const [dogStats, setDogStats] = useState([])
+const [dogStatsLoading, setDogStatsLoading] = useState(true);
 
 const fetchDogStats = async () => {
   try {
+    setDogStatsLoading(true); // Set dogStatsLoading to true when starting the fetch
+
     const response = await fetch(`http://localhost:3029/dogStats?${username}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      // body: JSON.stringify({
-      //   // Include any necessary parameters for the backend query
-      //   // For example, you might want to send the user's ID
-      //   username: username, // Replace with the actual user ID
-      // }),
     });
 
     if (response.ok) {
       const data = await response.json();
-      console.log(data.dogStats)
+      console.log(data.dogStats);
       setDogStats(data.dogStats);
     } else {
       console.error('Failed to fetch dog stats:', response.statusText);
     }
   } catch (error) {
     console.error('Error during fetch:', error);
+  } finally {
+    setDogStatsLoading(false); // Set dogStatsLoading to false when fetch is complete (success or failure)
   }
 };
+
 
 useEffect(() => {
   fetchDogStats();
@@ -1014,7 +1040,10 @@ return (
             Active Dogs: {livePark}
           </div>
         </div>
-        <RosterTable bigParkData={bigParkData} smallParkData={smallParkData} />
+
+        {/* loading park data */}
+        {loadingParkData ? <div>Loading..</div> :   <RosterTable bigParkData={bigParkData} smallParkData={smallParkData} />}
+
         {/* Your Stats Content Here */}
         {/* Content based on selected menu */}
       </div>
@@ -1156,8 +1185,23 @@ return (
           <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
             {console.log(dog)}
             <h3>{dog.dogName}'s Check In: <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkInPark(dog, 'big')}>Big Park</div>
+            <div
+              style={{
+                opacity: loadingCheckIn ? 1 : 0,
+                transition: 'opacity 1s ease-in-out',
+              }}
+            >
+              {loadingCheckIn ? 'Checking in...' : 'Done'}
+            </div>
             <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkInPark(dog, 'small')}>Small Park</div></h3>
-
+            <div
+              style={{
+                opacity: loadingCheckIn ? 1 : 0,
+                transition: 'opacity 1s ease-in-out',
+              }}
+            >
+              {loadingCheckIn ? 'Checking in...' : 'Done'}
+            </div>
           </div>
         ))}
 
@@ -1183,7 +1227,23 @@ return (
         {userDogs.map((dog, index) => (
           <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
             <h3>{dog.dogName}'s Check Out: <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkOutPark(dog, 'big')}>Big Park</div>
+            <div
+              style={{
+                opacity: loadingCheckIn ? 1 : 0,
+                transition: 'opacity 1s ease-in-out',
+              }}
+            >
+              {loadingCheckOut ? 'Checking out...' : 'Done'}
+            </div>
             <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkOutPark(dog, 'small')}>Small Park</div></h3>
+            <div
+              style={{
+                opacity: loadingCheckIn ? 1 : 0,
+                transition: 'opacity 1s ease-in-out',
+              }}
+            >
+              {loadingCheckOut ? 'Checking out...' : 'Done'}
+            </div>
 
           </div>
         ))}
@@ -1210,8 +1270,22 @@ return (
                <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', margin: '10px', textAlign: 'left' }}>
                  <h3>{dog.dogName}'s Park Stats</h3>
                  <ul style={{ listStyle: 'none', padding: 0 }}>
-                   <li><strong>Time at Park This Week:</strong> <div style={{ marginLeft: '10px', display: 'inline-block' }}>{dogStats.weeklyTime || 'N/A'} hours</div></li>
-                   <li><strong>All Time at Park:</strong> <div style={{ marginLeft: '10px', display: 'inline-block' }}>{dogStats.totalTime || 'N/A'} hours</div></li>
+                   <li><strong>Time at Park This Week:</strong> <div style={{ marginLeft: '10px', display: 'inline-block' }}>
+                  {dogStatsLoading ? (
+                    <div>Loading Dog Stats...</div>
+                  ) : (
+                    <>
+                   {dogStats.weeklyTime || 'N/A'}
+                    </>
+                  )} hours</div></li>
+                                 <li><strong>All Time at Park:</strong> <div style={{ marginLeft: '10px', display: 'inline-block' }}>
+                                  {dogStatsLoading ? (
+                     <div>Loading Dog Stats...</div>
+                   ) : (
+                     <>
+                   {dogStats.totalTime || 'N/A'}
+                     </>
+                   )} hours</div></li>
                    <li><strong>Park Breakdown</strong></li>
                    <li><strong>Energy:</strong> {dog.energy}</li>
                    <li><strong>Size:</strong> {dog.size}</li>
@@ -1261,7 +1335,7 @@ return (
           }}>Sign Up</button>
              </div>
              {showSignInForm && (
-               <SignInForm onSignIn={handleSignIn} onForgotPassword={handleForgotPassword} />
+               <SignInForm onSignIn={handleSignIn} onForgotPassword={handleForgotPassword} loadingSignIn={loadingSignIn} />
              )}
              {showSignUpForm && (
                <SignUpForm onSignUp={handleSignUp} />
