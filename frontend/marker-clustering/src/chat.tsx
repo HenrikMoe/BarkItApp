@@ -11,9 +11,21 @@ interface ChatProps {
   username: string;
 }
 
+interface TabsProps {
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const Tabs: React.FC<TabsProps> = ({ setActiveTab }) => (
+  <div style={{ marginBottom: '10px' }}>
+    <button onClick={() => setActiveTab('park')}>Park Chat</button>
+    <button onClick={() => setActiveTab('dm')}>DMs</button>
+  </div>
+);
+
 const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<string>('park');
 
   const receiveMessage = (message: Message) => {
     setChatMessages((prevMessages) => [...prevMessages, message]);
@@ -24,7 +36,8 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
       receiveMessage({ user: username, message: newMessage, timestamp: new Date().toISOString() });
 
       try {
-        await fetch(`http://localhost:3029/sendmessage/${dogParkName}`, {
+        const targetEndpoint = activeTab === 'park' ? `chat/${dogParkName}` : `dms/${username}`;
+        await fetch(`http://localhost:3029/${targetEndpoint}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -42,7 +55,8 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
   useEffect(() => {
     const chatRequestInterval = setInterval(async () => {
       try {
-        const response = await fetch(`http://localhost:3029/chat/${dogParkName}`);
+        const targetEndpoint = activeTab === 'park' ? `chat/${dogParkName}` : `dms/${username}`;
+        const response = await fetch(`http://localhost:3029/${targetEndpoint}`);
         if (response.ok) {
           const data = await response.json();
           setChatMessages(data.messages);
@@ -55,7 +69,7 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
     }, 1000);
 
     return () => clearInterval(chatRequestInterval);
-  }, [dogParkName]);
+  }, [dogParkName, username, activeTab]);
 
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +81,8 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
 
   return (
     <div>
+      <Tabs setActiveTab={setActiveTab} />
+
       <div
         ref={chatRef}
         style={{
