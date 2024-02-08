@@ -12,6 +12,7 @@ import type { Marker } from '@googlemaps/markerclusterer';
 import trees from './trees';
 import heic2any from 'heic2any';
 import { ring } from 'ldrs'
+import UserProfile from './UserProfile'
 ring.register('my-precious')
 import {
   AdvancedMarker,
@@ -323,7 +324,7 @@ const App: React.FC = () =>{
   const [userSignedIn, setUserSignedIn] = useState(false);
   const [dogs, setDogs] = useState<Dog[]>([]);
   const [loadingSignIn, setLoadingSignIn] = useState(false)
-
+  const[ssnToken, setssnToken] = useState('')
   const handleSignIn = async (username: string, password: string) => {
     try {
       setLoadingSignIn(true)
@@ -338,7 +339,7 @@ const App: React.FC = () =>{
       if (response.ok) {
         const data = await response.json();
         console.log(data.message);
-
+        setssnToken(data.ssnToken)
         // Set the username in the state if available in the response
         if (data.username) {
           setUsername(data.username);
@@ -352,6 +353,7 @@ const App: React.FC = () =>{
       console.error('Error during sign-in:', error);
     } finally {
       setLoadingSignIn(false)
+
 
     }
   };
@@ -481,6 +483,7 @@ const [loadingCheckInBig, setLoadingCheckInBig] = useState(false)
 const [loadingCheckInSmall, setLoadingCheckInSmall] = useState(false)
 
 
+
  const checkInPark = async (dog, side) => {
    try {
      if(side==='big'){setLoadingCheckInBig(true)}else{setLoadingCheckInSmall(true)}
@@ -519,12 +522,13 @@ const [loadingCheckInSmall, setLoadingCheckInSmall] = useState(false)
    }
  };
 
-const [loadingCheckOut, setLoadingCheckOut] = useState(false)
+const [loadingCheckOutBig, setLoadingCheckOutBig] = useState(false)
+const [loadingCheckOutSmall, setLoadingCheckOutSmall] = useState(false)
 
 const checkOutPark = async (dog, side) => {
   try {
     console.log(dog);
-    setLoadingCheckOut(true)
+    if(side==='big'){setLoadingCheckOutBig(true)}else{setLoadingCheckOutSmall(true)}
     const response = await fetch('http://localhost:3029/checkout', {
       method: 'POST',
       headers: {
@@ -543,7 +547,7 @@ const checkOutPark = async (dog, side) => {
   } catch (error) {
     console.error('Error during check-out:', error);
   } finally {
-    setLoadingCheckOut(false)
+    if(side==='big'){setLoadingCheckOutBig(false)}else{setLoadingCheckOutSmall(false)}
   }
 };
 
@@ -571,7 +575,6 @@ const checkOutPark = async (dog, side) => {
       return <div>{userDogsLoading ? <div>   <my-precious color="white"></my-precious></div> : <div>No dogs found for the user.</div>} </div>;
     }
 
-    console.log(userDogs);
 
     return (
       <div>
@@ -950,7 +953,7 @@ const fetchDogStats = async () => {
   try {
     setDogStatsLoading(true); // Set dogStatsLoading to true when starting the fetch
 
-    const response = await fetch(`http://localhost:3029/dogStats?${username}`, {
+    const response = await fetch(`http://localhost:3029/dogStats?username=${username}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -975,6 +978,76 @@ const fetchDogStats = async () => {
 useEffect(() => {
   fetchDogStats();
 }, [showDogStats]); // Fetch dog stats when the component mounts
+
+const [showUserProfile, setShowUserProfile] = useState(false)
+
+const handleUserProfileOn = () => {
+  setShowUserProfile(true)
+}
+
+const handleUserProfileOff = () => {
+  setShowUserProfile(false)
+}
+
+const [loadingUserProfile, setLoadingUserProfile] = useState(false)
+const [loadingUpdateProfile, setLoadingUpdateProfile] = useState(false)
+// Function to fetch user profile data
+const getUserProfile = async () => {
+  try {
+    setLoadingUserProfile(true);
+    console.log(username)
+    const response = await fetch(`http://localhost:3029/userprofile?username=${username}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      // Include any necessary authentication headers, such as tokens
+    },
+  });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data)
+      return data.userProfile;
+    } else {
+      console.error('Failed to fetch user profile:', response.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error during fetch:', error);
+    return null;
+  } finally {
+    setLoadingUserProfile(false);
+  }
+};
+
+
+// Function to update user profile data
+const updateUserProfile = async (updatedData: UserProfileData, ssnToken: string) => {
+  try {
+    setLoadingUpdateProfile(true);
+
+    const response = await fetch('http://localhost:3029/updateuserprofile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        // Include any necessary authentication headers, such as tokens
+        'Authorization': `Bearer ${ssnToken}`, // Assuming a Bearer token for authentication
+      },
+      body: JSON.stringify(updatedData),
+    });
+
+    if (response.ok) {
+      console.log('User profile updated successfully');
+    } else {
+      console.error('Failed to update user profile:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error during update:', error);
+  } finally {
+    setLoadingUpdateProfile(false);
+  }
+};
+
 
 
 return (
@@ -1010,9 +1083,11 @@ return (
 
     <div
       style={{ cursor: 'pointer', textDecoration: selectedMenu === 'energy' ? 'underline' : 'none' }}
-      onClick={() => handleSignOut()}
+      onClick={() => handleUserProfileOn()}
     >
-      Sign Out
+    Profile
+
+
     </div>
   </div>
 
@@ -1104,6 +1179,10 @@ return (
         </button>
 
       </div>
+    )}
+
+    {showUserProfile && (
+      <UserProfile ssnToken={ssnToken} username={username} handleSignOut={handleSignOut} handleUserProfileOff={handleUserProfileOff} getUserProfile={getUserProfile} updateUserProfile={updateUserProfile} />
     )}
 
     {showCalendar && (
@@ -1237,7 +1316,7 @@ return (
             <h3>{dog.dogName}'s Check Out: <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkOutPark(dog, 'big')}>Big Park</div>
             <div
               style={{
-                opacity: loadingCheckInBig ? 1 : 0,
+                opacity: loadingCheckOutBig ? 1 : 0,
                 transition: 'opacity 1s ease-in-out',
               }}
             >
@@ -1246,7 +1325,7 @@ return (
             <div style={{ marginTop: '20px', textAlign: 'left' }} onClick={() => checkOutPark(dog, 'small')}>Small Park</div></h3>
             <div
               style={{
-                opacity: loadingCheckInSmall
+                opacity: loadingCheckOutSmall
                  ? 1 : 0,
                 transition: 'opacity 1s ease-in-out',
               }}

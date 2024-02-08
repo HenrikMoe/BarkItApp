@@ -110,22 +110,20 @@ app.post('/signup', async (req, res) => {
 });
 
 
-// Sign-in endpoint (replace with actual logic)
+const jwt = require('jsonwebtoken');
+const secretKey = process.env.JWT_SECRET_KEY || 'default-secret-key';
+
 app.post('/signin', async (req, res) => {
   try {
-    console.log('hello1')
     const { username, password } = req.body;
 
     // Check if the user exists by username or email
-    var user = await client.db("barkit").collection("users").findOne({
+    const user = await client.db("barkit").collection("users").findOne({
       $or: [
         { username: username },
         { email: username },
       ],
     });
-
-    console.log('hello2')
-
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -136,15 +134,16 @@ app.post('/signin', async (req, res) => {
       return res.status(401).json({ message: 'Invalid password' });
     }
 
-    // If everything is correct, send a success response with the username
-    res.status(200).json({ message: 'Sign-in successful', username: user.username });
+    // Sign the session token with a secret key and set it to expire in 3 hours
+    const ssnToken = jwt.sign({ username: user.username }, secretKey, { expiresIn: '3h' });
+
+    // Send the session token in the response body
+    res.status(200).json({ message: 'Sign-in successful', username: user.username, ssnToken });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
-
-
 
 
 // Get user dogs endpoint
@@ -870,6 +869,79 @@ app.get('/dogStats', async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
+
+app.get('/userprofile', async (req, res) => {
+  try {
+
+    const { username } = req.query;
+    console.log(username); // Log the entire req.query object
+
+    // Fetch user profile from the database excluding email and password fields
+    // Assuming a MongoDB collection named "users"
+    const user = await client.db("barkit").collection("users").findOne(
+      { username: username },
+      { projection: { email: 0, password: 0 } } // Exclude email and password fields
+    );
+
+    console.log(user);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({ userProfile: user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+
+app.put('/updateuserprofile', async (req, res) => {
+  try {
+    const { username, verified, fullName, rating, dms, calendar } = req.body;
+
+    // Authenticate the request using the provided JWT token
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    jwt.verify(token, secretKey, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ message: 'Invalid token' });
+      }
+
+      // Check if the decoded username matches the requested username
+      if (decoded.username !== username) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+
+      // Update user profile in the database
+      // Assuming a MongoDB collection named "users"
+      client.db("barkit").collection("users").updateOne(
+        { username: username },
+        {
+          $set: {
+            verified: verified,
+            fullName: fullName,
+            rating: rating,
+            dms: dms,
+            calendar: calendar,
+          },
+        }
+      );
+
+      return res.status(200).json({ message: 'User profile updated successfully' });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 
 
 // Connect to MongoDB and start the Express server
