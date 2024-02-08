@@ -67,6 +67,7 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username, openUser }) => {
         console.error('Error during chat request:', error);
       }
     }, 1000);
+    
 
     return () => clearInterval(chatRequestInterval);
   }, [dogParkName, username, activeTab]);
