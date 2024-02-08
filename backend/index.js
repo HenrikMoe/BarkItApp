@@ -113,6 +113,7 @@ app.post('/signup', async (req, res) => {
 // Sign-in endpoint (replace with actual logic)
 app.post('/signin', async (req, res) => {
   try {
+    console.log('hello1')
     const { username, password } = req.body;
 
     // Check if the user exists by username or email
@@ -122,6 +123,9 @@ app.post('/signin', async (req, res) => {
         { email: username },
       ],
     });
+
+    console.log('hello2')
+
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
