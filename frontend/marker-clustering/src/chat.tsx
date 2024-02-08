@@ -22,7 +22,7 @@ const Tabs: React.FC<TabsProps> = ({ setActiveTab }) => (
   </div>
 );
 
-const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
+const Chat: React.FC<ChatProps> = ({ dogParkName, username, openUser }) => {
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('park');
@@ -79,6 +79,41 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
     }
   }, [chatMessages]);
 
+  type UserProfileData = {
+    username: string;
+    verified: boolean;
+    fullName: string;
+    rating: number;
+    dms: number;
+    calendar: number;
+    profilePhoto: string; // URL or path to the profile photo
+  };
+
+  const [userData, setUserData] = useState<UserProfileData | null>(null);
+
+
+  const fetchUserProfile = async (user: string) => {
+    try {
+      const userProfileData = await openUser(user);
+      setUserData(userProfileData);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      // Handle the error if needed
+    }
+  };
+
+  const [userSelected, setUserSelected] = useState('')
+
+  const handleUserSelected  = (user: string) => {
+    console.log(user)
+    setUserSelected(user)
+    fetchUserProfile(user);
+  }
+
+  const handleUserDataOff = () =>{
+    setUserData(null)
+  }
+
   return (
     <div>
       <Tabs setActiveTab={setActiveTab} />
@@ -92,9 +127,31 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
           padding: '10px',
         }}
       >
+      {userData && (
+         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+            <div style={{ backgroundColor: 'rgba(0, 0, 50, 0.5)', padding: '20px', borderRadius: '8px', maxWidth: '600px', width: '100%' }}>
+             <div>
+               <h2>User Profile</h2>
+                 <>
+                   <img src={userData.profilePhoto} alt="Profile" style={{ maxWidth: '100px' }} />
+                   <p>Username: {userData.username}</p>
+                   <p>Verified: {userData.verified ? 'Yes' : 'No'}</p>
+                   <p>Full Name: {userData.fullName}</p>
+                   <p>Rating: {userData.rating}</p>
+                   <p>DM: {userData.dms}</p>
+                   <p>Calendar: {userData.calendar}</p>
+                   <p onClick={handleUserDataOff}> Exit </p>
+                 </>
+
+
+               </div>
+               </div>
+               </div>
+       )}
+
         {chatMessages.map((message, index) => (
           <div key={index}>
-            <strong>{message.user}:</strong> {message.message}
+            <strong onClick={()=> handleUserSelected(message.user)}>{message.user}:</strong> {message.message}
             <div style={{ fontSize: '10px', color: '#888' }}>
               {new Date(message.timestamp).toLocaleString()}
             </div>
@@ -113,6 +170,7 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username }) => {
         <button onClick={sendMessage}>Send</button>
       </div>
     </div>
+
   );
 };
 

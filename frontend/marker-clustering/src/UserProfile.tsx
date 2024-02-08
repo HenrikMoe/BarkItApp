@@ -79,8 +79,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ ssnToken, getUserProfile, upd
   };
 
   return (
-    <div>
-      {userData ? (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+       <div style={{ backgroundColor: 'rgba(0, 0, 50, 0.5)', padding: '20px', borderRadius: '8px', maxWidth: '600px', width: '100%' }}>
+         {userData ? (
         <div>
           <h2>User Profile</h2>
           {editMode ? (
@@ -142,6 +143,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ ssnToken, getUserProfile, upd
       ) : (
         <p>Loading user profile...</p>
       )}
+    </div>
     </div>
   );
 };

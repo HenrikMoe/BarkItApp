@@ -1048,6 +1048,34 @@ const updateUserProfile = async (updatedData: UserProfileData, ssnToken: string)
   }
 };
 
+const handleOpenUser = async(user: string)=>{
+  try {
+    setLoadingUserProfile(true);
+    console.log(user)
+    const response = await fetch(`http://localhost:3029/userprofile?username=${user}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      // Include any necessary authentication headers, such as tokens
+    },
+  });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data)
+      return data.userProfile;
+    } else {
+      console.error('Failed to fetch user profile:', response.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error during fetch:', error);
+    return null;
+  } finally {
+    setLoadingUserProfile(false);
+  }
+}
+
 
 
 return (
@@ -1190,7 +1218,7 @@ return (
     )}
 
     {showChat &&(
-       <Chat dogParkName={livePark} username={username} />
+       <Chat openUser={handleOpenUser} dogParkName={livePark} username={username} />
      )}
 
      {showHistoricalDogParks && (
