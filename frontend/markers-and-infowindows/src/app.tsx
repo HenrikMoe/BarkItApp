@@ -72,6 +72,7 @@ const App = () => {
             }}></div>
         </AdvancedMarker>
 
+
         {/* simple positioned infowindow */}
         <InfoWindow position={{lat: 40, lng: 0}} maxWidth={200}>
           <p>
