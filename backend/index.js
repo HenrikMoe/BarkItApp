@@ -943,6 +943,44 @@ app.put('/updateuserprofile', async (req, res) => {
 });
 
 
+app.post('/dms/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const { user, message } = req.body;
+    const timestamp = new Date().toISOString();
+
+    // Insert the new message with timestamp into the 'directMessages' collection
+    await client.db('barkit').collection('directMessages').updateOne(
+      { username },
+      { $push: { messages: { user, message, timestamp } } },
+      { upsert: true } // Create the document if it doesn't exist
+    );
+
+    res.status(200).json({ message: 'Message sent successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+app.get('/dms/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    // Retrieve chat messages for the specified user from the database
+    const chatData = await client.db('barkit').collection('directMessages').findOne({ username });
+
+    if (!chatData) {
+      return res.status(404).json({ messages: [] });
+    }
+
+    res.status(200).json({ messages: chatData.messages });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 
 // Connect to MongoDB and start the Express server
 connectMongoDB().then(() => {
