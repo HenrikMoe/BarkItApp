@@ -14,6 +14,8 @@ import heic2any from 'heic2any';
 import { ring } from 'ldrs'
 import UserProfile from './UserProfile'
 ring.register('my-precious')
+import chat from './chat-118.png'
+
 import {
   AdvancedMarker,
   APIProvider,
@@ -608,6 +610,10 @@ const checkOutPark = async (dog, side) => {
             </li>
           ))}
         </ul>
+        <div>
+        <button onClick={()=>toggleAddDog ()}>Add Dog</button>
+        </div>
+
       </div>
     );
   };
@@ -1095,9 +1101,9 @@ return (
     </div>
     <div
       style={{ cursor: 'pointer', textDecoration: selectedMenu === 'sizes' ? 'underline' : 'none' }}
-      onClick={() => toggleAddDog()}
+      onClick={() => toggleChat()}
     >
-      Add Dog
+    <img src={chat} alt="ch Dogs" style={{ height: '40px', width: '40px', marginBottom: '5px' }} onClick={() => toggleChat()} />
     </div>
 
     <div
@@ -1114,8 +1120,6 @@ return (
       onClick={() => handleUserProfileOn()}
     >
     Profile
-
-
     </div>
   </div>
 
@@ -1197,6 +1201,7 @@ return (
         </button>
       </form>
     )}
+
 
     {showRemoveDog && (
       <div>

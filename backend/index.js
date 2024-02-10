@@ -770,7 +770,7 @@ app.get('/chat/:dogParkName', async (req, res) => {
     const chatData = await client.db('barkit').collection('dogParkChats').findOne({ dogParkName });
 
     if (!chatData) {
-      return res.status(404).json({ messages: [] });
+      return res.status(200).json({ messages: [] });
     }
 
     res.status(200).json({ messages: chatData.messages });
@@ -971,7 +971,7 @@ app.get('/dms/:username', async (req, res) => {
     const chatData = await client.db('barkit').collection('directMessages').findOne({ username });
 
     if (!chatData) {
-      return res.status(404).json({ messages: [] });
+      return res.status(200).json({ messages: [] });
     }
 
     res.status(200).json({ messages: chatData.messages });

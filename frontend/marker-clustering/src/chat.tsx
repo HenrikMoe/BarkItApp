@@ -206,7 +206,7 @@ const handleDMChatTabClick = () => {
 
           {activeTab === 'park' && (
             <div style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px' }}>
-
+            <h3>Park Chat Messages {dogParkName}</h3>
             <div ref={chatRef} style={{ height: '200px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px' }}>
               {parkChatMessages.map((message, index) => (
                 <div key={index}>
@@ -228,7 +228,7 @@ const handleDMChatTabClick = () => {
             </div>
           )}
 
-          {activeTab === 'dm' && userSelected && (
+          {activeTab === 'dm' && (
             <div style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px' }}>
               <h3>Direct Messages with {userSelected}</h3>
               <div ref={chatRef} style={{ height: '100px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px' }}>
