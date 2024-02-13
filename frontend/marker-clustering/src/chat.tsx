@@ -140,6 +140,29 @@ const handleDMChatTabClick = () => {
   setUserSelected('');
 };
 
+const [dmUsers, setDMUsers] = useState<string[]>([]);
+const [selectedDMUser, setSelectedDMUser] = useState<string>(''); // Track the selected user for DM
+
+const fetchDMUsers = async () => {
+  try {
+    const response = await fetch(`http://localhost:3029/dmusers/${username}`);
+    if (response.ok) {
+      const data = await response.json();
+      setDMUsers(data.users);
+    } else {
+      console.error('Failed to fetch DM users:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error fetching DM users:', error);
+  }
+};
+useEffect(() => {
+  // Fetch the list of DM users when the component mounts
+  fetchDMUsers();
+
+  // ... rest of your code
+}, [username]);
+
   return (
     <div>
       <div style={{ marginBottom: '10px' }}>
@@ -229,28 +252,45 @@ const handleDMChatTabClick = () => {
           )}
 
           {activeTab === 'dm' && (
-            <div style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px' }}>
-              <h3>Direct Messages with {userSelected}</h3>
-              <div ref={chatRef} style={{ height: '100px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px' }}>
-                {dmChatMessages.map((message, index) => (
-                  <div key={index}>
-                    <strong>{message.user}:</strong> {message.message}
-                    <div style={{ fontSize: '10px', color: '#888' }}>{new Date(message.timestamp).toLocaleString()}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: '10px' }}>
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  style={{ width: '80%', marginRight: '5px' }}
-                  placeholder={`Type your message to ${userSelected}...`}
-                />
-                <button onClick={sendMessage}>Send</button>
-              </div>
+  <div style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px' }}>
+    {selectedDMUser ? (
+      // If a user is selected, show the conversation
+      <>
+        <h3>Direct Messages with {selectedDMUser}</h3>
+        <div ref={chatRef} style={{ height: '100px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px' }}>
+          {dmChatMessages.map((message, index) => (
+            <div key={index}>
+              <strong>{message.user}:</strong> {message.message}
+              <div style={{ fontSize: '10px', color: '#888' }}>{new Date(message.timestamp).toLocaleString()}</div>
             </div>
-          )}
+          ))}
+        </div>
+        <div style={{ marginTop: '10px' }}>
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            style={{ width: '80%', marginRight: '5px' }}
+            placeholder={`Type your message to ${selectedDMUser}...`}
+          />
+          <button onClick={sendMessage}>Send</button>
+        </div>
+      </>
+    ) : (
+      // If no user is selected, show the list of DM users
+      <>
+        <h3>Your Direct Message Conversations</h3>
+        <ul>
+          {dmUsers.map((user, index) => (
+            <li key={index} onClick={() => setSelectedDMUser(user)}>
+              {user}
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
+  </div>
+)}
           </div>}
 
     </div>

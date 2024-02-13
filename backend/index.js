@@ -981,6 +981,32 @@ app.get('/dms/:username', async (req, res) => {
   }
 });
 
+app.get('/dmusers/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    // Retrieve the list of DM users for the specified user from the database
+    const dmUsersData = await client.db('barkit').collection('directMessages').findOne({ username });
+
+    if (!dmUsersData) {
+      return res.status(200).json({ users: [] });
+    }
+
+    // Extract the list of DM users from the chatData
+    const dmUsers = dmUsersData.messages.map(message => message.user);
+
+    // Deduplicate the list to ensure unique users
+    const uniqueDMUsers = Array.from(new Set(dmUsers));
+
+    res.status(200).json({ users: uniqueDMUsers });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+
 
 // Connect to MongoDB and start the Express server
 connectMongoDB().then(() => {
