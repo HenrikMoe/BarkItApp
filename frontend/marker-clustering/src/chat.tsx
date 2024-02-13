@@ -135,9 +135,11 @@ const [loadingChat, setLoadingChat] = useState(true)
   setUserSelected('');
 };
 
-const handleDMChatTabClick = () => {
+const handleDMChatTabClick = (user) => {
   setActiveTab('dm');
-  setUserSelected('');
+  setSelectedDMUser(user.username);
+  setUserData('')
+
 };
 
 const [dmUsers, setDMUsers] = useState<string[]>([]);
@@ -161,7 +163,11 @@ useEffect(() => {
   fetchDMUsers();
 
   // ... rest of your code
-}, [username]);
+}, [!selectedDMUser]);
+
+const handleBackToDMList = ()=>{
+  setSelectedDMUser('')
+}
 
   return (
     <div>
@@ -192,7 +198,7 @@ useEffect(() => {
                     <p>Verified: {userData.verified ? 'Yes' : 'No'}</p>
                     <p>Full Name: {userData.fullName}</p>
                     <p>Rating: {userData.rating}</p>
-                    <p onClick={handleDMChatTabClick}>DM </p>
+                    <p onClick={()=>handleDMChatTabClick(userData)}>DM </p>
                     <p>Calendar: {userData.calendar}</p>
                     <p onClick={handleUserDataOff}> Exit </p>
                   </>
@@ -256,7 +262,7 @@ useEffect(() => {
     {selectedDMUser ? (
       // If a user is selected, show the conversation
       <>
-        <h3>Direct Messages with {selectedDMUser}</h3>
+        <h3>Direct Messages with {selectedDMUser} <button onClick={()=>handleBackToDMList()}>Back</button></h3>
         <div ref={chatRef} style={{ height: '100px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px' }}>
           {dmChatMessages.map((message, index) => (
             <div key={index}>

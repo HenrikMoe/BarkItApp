@@ -987,14 +987,16 @@ app.get('/dmusers/:username', async (req, res) => {
 
     // Retrieve the list of DM users for the specified user from the database
     const dmUsersData = await client.db('barkit').collection('directMessages').findOne({ username });
-
+    console.log(dmUsersData)
     if (!dmUsersData) {
       return res.status(200).json({ users: [] });
     }
 
+
     // Extract the list of DM users from the chatData
     const dmUsers = dmUsersData.messages.map(message => message.user);
 
+    console.log(dmUsers)
     // Deduplicate the list to ensure unique users
     const uniqueDMUsers = Array.from(new Set(dmUsers));
 
