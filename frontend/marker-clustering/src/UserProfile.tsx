@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import IdForm from './IdForm'
 
 type UserProfileProps = {
   getUserProfile: () => Promise<UserProfileData>; // Function to get user profile data
@@ -78,6 +79,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ ssnToken, getUserProfile, upd
     }
   };
 
+  const [showId, setShowId] = useState(false)
+
+  const handleIdClick = () => {
+    setShowId(true)
+  }
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
        <div style={{ backgroundColor: 'rgba(0, 0, 50, 0.5)', padding: '20px', borderRadius: '8px', maxWidth: '600px', width: '100%' }}>
@@ -118,7 +125,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ ssnToken, getUserProfile, upd
             <>
               <img src={userData.profilePhoto} alt="Profile" style={{ maxWidth: '100px' }} />
               <p>Username: {userData.username}</p>
-              <p>Verified: {userData.verified ? 'Yes' : 'No'}</p>
+              <p>Verified: {userData.verified ? 'Yes' : <div><p>No </p> <button onClick={handleIdClick}>Verfiy</button></div>}</p>
               <p>Full Name: {userData.fullName}</p>
               <p>Rating: {userData.rating}</p>
               <p>Calendar: {userData.calendar}</p>
@@ -139,6 +146,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ ssnToken, getUserProfile, upd
       ) : (
         <p>Loading user profile...</p>
       )}
+
+      {showId &&
+        <IdForm />
+      }
+
     </div>
     </div>
   );
