@@ -42,14 +42,18 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username, openUser }) => {
   const [activeTab, setActiveTab] = useState<string>('park');
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [userSelected, setUserSelected] = useState('');
+  const [dmUsers, setDMUsers] = useState<string[]>([]);
+  const [selectedDMUser, setSelectedDMUser] = useState<string>(''); // Track the selected user for DM
 
   const receiveMessage = (message: Message) => {
     setParkChatMessages((prevMessages) => [...prevMessages, message]);
   };
 
+
+
   const sendMessage = async () => {
     if (newMessage.trim() !== '') {
-      receiveMessage({ user: username, message: newMessage, timestamp: new Date().toISOString() });
+      receiveMessage({ user: selectedDMUser, message: newMessage, timestamp: new Date().toISOString() });
 
       try {
         const targetEndpoint = activeTab === 'park' ? `sendmessage/${dogParkName}` : `dms/${username}`;
@@ -58,7 +62,7 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username, openUser }) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ user: username, message: newMessage }),
+          body: JSON.stringify({ user: selectedDMUser, message: newMessage }),
         });
       } catch (error) {
         console.error('Error sending message:', error);
@@ -82,7 +86,9 @@ const [loadingChat, setLoadingChat] = useState(true)
           if(activeTab === 'park'){
             setParkChatMessages(data.messages);
           }else{
-            setDMChatMessages(data.messages);
+            console.log(selectedDMUser)
+            console.log(data.messages)
+            setDMChatMessages(data.messages.filter(message => message.user === selectedDMUser));
           }
         } else {
           console.error('Failed to fetch chat:', response.statusText);
@@ -97,7 +103,7 @@ const [loadingChat, setLoadingChat] = useState(true)
     }, 1000);
 
     return () => clearInterval(chatRequestInterval);
-  }, [dogParkName, username, activeTab]);
+  }, [dogParkName, username, activeTab, selectedDMUser]);
 
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -142,8 +148,6 @@ const handleDMChatTabClick = (user) => {
 
 };
 
-const [dmUsers, setDMUsers] = useState<string[]>([]);
-const [selectedDMUser, setSelectedDMUser] = useState<string>(''); // Track the selected user for DM
 
 const fetchDMUsers = async () => {
   try {
@@ -168,6 +172,30 @@ useEffect(() => {
 const handleBackToDMList = ()=>{
   setSelectedDMUser('')
 }
+
+const [searchQuery, setSearchQuery] = useState<string>('');
+const [searchingUsers, setSearchingUsers] = useState<string>('');
+
+const fetchDMUsersBySearch = async (searchQuery) => {
+  try {
+    const response = await fetch(`http://localhost:3029/users/search/${searchQuery}`);
+    if (response.ok) {
+      const data = await response.json();
+      setSearchingUsers(data.users);
+    } else {
+      console.error('Failed to fetch DM users:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error fetching DM users:', error);
+  }
+};
+
+useEffect(() => {
+  // Fetch the list of DM users when the component mounts
+  fetchDMUsersBySearch(searchQuery);
+
+  // ... rest of your code
+}, [searchQuery]);
 
   return (
     <div>
@@ -285,13 +313,29 @@ const handleBackToDMList = ()=>{
     ) : (
       // If no user is selected, show the list of DM users
       <>
-        <h3>Your Direct Message Conversations</h3>
+        <h3>Your Direct Message Conversations </h3>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ width: '80%', marginBottom: '5px' }}
+          placeholder="Search DM users..."
+        />
         <ul>
-          {dmUsers.map((user, index) => (
+
+
+          {dmUsers &&
+            dmUsers.map((user, index) => (
             <li key={index} onClick={() => setSelectedDMUser(user)}>
               {user}
             </li>
           ))}
+          {searchingUsers &&
+          searchingUsers.map((user, index) => (
+              <li key={index} onClick={() => setSelectedDMUser(user)}>
+                {user}
+              </li>
+            ))}
         </ul>
       </>
     )}

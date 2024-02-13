@@ -1016,6 +1016,23 @@ app.get('/dmusers/:username', async (req, res) => {
 });
 
 
+// Assuming Express app
+app.get('/users/search/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    console.log(username)
+    // Fetch users that match the search query
+    const users = await client.db('barkit').collection('users').find({ username: { $regex: `^${username}`, $options: 'i' } }).toArray();
+
+    const userNames = users.map((user) => user.username);
+    console.log(userNames)
+    res.status(200).json({ users: userNames });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 
 
 // Connect to MongoDB and start the Express server
