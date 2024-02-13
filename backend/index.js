@@ -949,10 +949,17 @@ app.post('/dms/:username', async (req, res) => {
     const { user, message } = req.body;
     const timestamp = new Date().toISOString();
 
-    // Insert the new message with timestamp into the 'directMessages' collection
+    // Insert the new message with timestamp into the sender's 'directMessages' collection
     await client.db('barkit').collection('directMessages').updateOne(
       { username },
       { $push: { messages: { user, message, timestamp } } },
+      { upsert: true } // Create the document if it doesn't exist
+    );
+
+    // Update the receiver's DM list by inserting the sender's username
+    await client.db('barkit').collection('directMessages').updateOne(
+      { username: user },
+      { $push: { messages: { user: username, message, timestamp } } },
       { upsert: true } // Create the document if it doesn't exist
     );
 
