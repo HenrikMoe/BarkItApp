@@ -101,10 +101,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ ssnToken, getUserProfile, upd
                 <input type="number" name="rating" value={editedData?.rating} onChange={handleInputChange} />
               </label>
               <br />
-              <label>
-                DMs:
-                <input type="number" name="dms" value={editedData?.dms} onChange={handleInputChange} />
-              </label>
+
               <br />
               <label>
                 Calendar:
@@ -124,7 +121,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ ssnToken, getUserProfile, upd
               <p>Verified: {userData.verified ? 'Yes' : 'No'}</p>
               <p>Full Name: {userData.fullName}</p>
               <p>Rating: {userData.rating}</p>
-              <p>DMs: {userData.dms}</p>
               <p>Calendar: {userData.calendar}</p>
               <p onClick={handleSignOut}> Sign Out </p>
               <p onClick={handleUserProfileOff}> Exit </p>

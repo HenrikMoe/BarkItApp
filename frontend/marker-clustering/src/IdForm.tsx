@@ -13,6 +13,7 @@ const IdForm: React.FC<IdFormProps> = ({ onIdSubmit }) => {
       setIdImage(e.target.files[0]);
     }
   };
+  
 
   const handleSelfieImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {

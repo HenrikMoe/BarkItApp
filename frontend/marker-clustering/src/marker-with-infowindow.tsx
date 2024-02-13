@@ -200,7 +200,7 @@ export const MarkerWithInfowindow = ({
          <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} onClick={() => toggleStats('westwoof')}>
            View Active Dogs
          </div>
-         <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} onClick={() => toggleStats('westwoof')}>
+         <div style={{ cursor: 'pointer', color: 'blue', fontSize: '14px', marginTop: '10px' }} >
          <button onClick={backToPreview} style={{ cursor: 'pointer', padding: '5px', borderRadius: '5px', backgroundColor: '#8fdf82', marginTop: '0px', fontSize: '14px' }}>
            Back
          </button>
