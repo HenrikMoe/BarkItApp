@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import IdForm from './IdForm'
+//// TEMP:
+import Payment from './Payment'
+import Balance from './Balance'
 
 type UserProfileProps = {
   getUserProfile: () => Promise<UserProfileData>; // Function to get user profile data
@@ -131,6 +134,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ ssnToken, getUserProfile, upd
               <p>Calendar {userData.calendar}</p>
               <p onClick={handleSignOut}> Sign Out </p>
               <p onClick={handleUserProfileOff}> Exit </p>
+              <Payment title={'Da'} price={20}/>
+              <Balance />
             </>
           )}
 
@@ -146,6 +151,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ ssnToken, getUserProfile, upd
       ) : (
         <p>Loading user profile...</p>
       )}
+
 
       {showId &&
         <IdForm />

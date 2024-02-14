@@ -1090,6 +1090,32 @@ app.post('/verifyUser', async (req, res) => {
   }
 });
 
+
+router.post('/charge', async (req, res) => {
+  try {
+    const { token, amount } = req.body;
+
+    // Perform the charge using the Stripe API (server-side)
+    // Ensure you have set up your Stripe secret key on your server
+    const stripe = require('stripe')('your_stripe_secret_key');
+
+    const charge = await stripe.charges.create({
+      source: token.id,
+      amount: amount * 100, // Amount is in cents
+      currency: 'usd',
+      description: 'Payment for a product',
+    });
+
+    // Handle successful charge or errors
+    res.status(200).json({ message: 'Payment successful', charge });
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+
 // Connect to MongoDB and start the Express server
 connectMongoDB().then(() => {
   app.listen(port, () => {
