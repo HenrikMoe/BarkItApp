@@ -125,10 +125,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ ssnToken, getUserProfile, upd
             <>
               <img src={userData.profilePhoto} alt="Profile" style={{ maxWidth: '100px' }} />
               <p>Username: {userData.username}</p>
-              <p>Verified: {userData.verified ? 'Yes' : <div><p>No </p> <button onClick={handleIdClick}>Verfiy</button></div>}</p>
+              <p>Dog Watcher: {userData.verified ? 'Yes' : 'No '}<button onClick={handleIdClick}>Verfiy</button></p>
               <p>Full Name: {userData.fullName}</p>
               <p>Rating: {userData.rating}</p>
-              <p>Calendar: {userData.calendar}</p>
+              <p>Calendar {userData.calendar}</p>
               <p onClick={handleSignOut}> Sign Out </p>
               <p onClick={handleUserProfileOff}> Exit </p>
             </>

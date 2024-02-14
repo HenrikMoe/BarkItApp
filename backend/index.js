@@ -1034,6 +1034,61 @@ app.get('/users/search/:username', async (req, res) => {
 });
 
 
+app.post('/verifyUser', async (req, res) => {
+  try {
+    const { idImageBase64, selfieImageBase64 } = req.body;
+
+    if (!idImageBase64 || !selfieImageBase64) {
+      return res.status(400).json({ message: 'Both ID image and selfie image are required' });
+    }
+
+    // Convert base64 strings to buffers
+    const idImageBuffer = Buffer.from(idImageBase64.split(',')[1], 'base64');
+    const selfieImageBuffer = Buffer.from(selfieImageBase64.split(',')[1], 'base64');
+
+    // Create a transporter for sending emails
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+      secure: false,
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: 'henrikmoe29@gmail.com', // Change this to the recipient's email
+      subject: 'Verification Images',
+      text: 'Please find the attached verification images.',
+      attachments: [
+        {
+          filename: 'idImage.png', // You can customize the filename and extension
+          content: idImageBuffer,
+        },
+        {
+          filename: 'selfieImage.png', // You can customize the filename and extension
+          content: selfieImageBuffer,
+        },
+      ],
+    };
+
+    // Send the email with attachments
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Error sending verification email' });
+      }
+
+      console.log('Email sent: ' + info.response);
+      res.status(200).json({ message: 'Verification email sent successfully' });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 // Connect to MongoDB and start the Express server
 connectMongoDB().then(() => {
