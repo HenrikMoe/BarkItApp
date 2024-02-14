@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
-const Balance: React.FC = () => {
+interface BalanceProps {
+  username: string;
+}
+
+const Balance: React.FC<BalanceProps> = ({ username }) => {
   const [balance, setBalance] = useState<number | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState<number>(0);
 
@@ -8,7 +12,7 @@ const Balance: React.FC = () => {
     // Fetch the user's account balance from the backend
     const fetchBalance = async () => {
       try {
-        const response = await fetch('http://localhost:3029/getBalance', {
+        const response = await fetch(`http://localhost:3029/getBalance/${username}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -27,22 +31,24 @@ const Balance: React.FC = () => {
     };
 
     fetchBalance();
-  }, []);
+  }, [username]);
 
   const handleWithdraw = async () => {
-    // Initiate a withdrawal to the user's bank account using the Stripe API
+    // Initiate a withdrawal to the user's bank account using the backend
     try {
       const response = await fetch('http://localhost:3029/withdraw', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ amount: withdrawAmount }),
+        body: JSON.stringify({ amount: withdrawAmount, username }),
       });
 
       if (response.ok) {
         // Handle success (if needed)
         console.log('Withdrawal initiated successfully');
+        // Update the balance locally if needed
+        setBalance((prevBalance) => (prevBalance !== null ? prevBalance - withdrawAmount : null));
       } else {
         // Handle error
         console.error('Failed to initiate withdrawal:', response.statusText);

@@ -135,7 +135,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ ssnToken, getUserProfile, upd
               <p onClick={handleSignOut}> Sign Out </p>
               <p onClick={handleUserProfileOff}> Exit </p>
               <Payment title={'Da'} price={20}/>
-              <Balance />
+              <Balance username={"your_username"} />
             </>
           )}
 

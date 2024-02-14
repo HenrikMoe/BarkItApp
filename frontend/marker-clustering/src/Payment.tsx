@@ -3,9 +3,11 @@ import React, { useState, useEffect } from 'react';
 type PaymentProps = {
   title: string;
   price: number;
+  username: string;
+  interactingUsername: string;
 };
 
-const Payment: React.FC<PaymentProps> = ({ title, price }) => {
+const Payment: React.FC<PaymentProps> = ({ title, price, username, interactingUsername }) => {
   const [paymentMethod, setPaymentMethod] = useState<'applePay' | 'creditCard' | null>(null);
   const [stripe, setStripe] = useState<any>(null);
 
@@ -16,7 +18,7 @@ const Payment: React.FC<PaymentProps> = ({ title, price }) => {
       stripeScript.src = 'https://js.stripe.com/v3/';
       stripeScript.async = true;
       stripeScript.onload = () => {
-        setStripe(window.Stripe('your_stripe_public_key'));
+        setStripe(window.Stripe(process.env.STRIPE_SECRET_KEY));
       };
       document.body.appendChild(stripeScript);
 
@@ -37,13 +39,18 @@ const Payment: React.FC<PaymentProps> = ({ title, price }) => {
           // Handle error
           console.error('Stripe token creation error:', error);
         } else {
-          // Send the token to your backend for further processing
+          // Send the token and user information to your backend for further processing
           await fetch('http://localhost:3029/charge', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ token, amount: price }),
+            body: JSON.stringify({
+              token,
+              amount: price,
+              username,
+              interactingUsername,
+            }),
           });
         }
       }
@@ -54,34 +61,34 @@ const Payment: React.FC<PaymentProps> = ({ title, price }) => {
 
   return (
     <div>
-          <h2>{title}</h2>
-          <p>Price: ${price.toFixed(2)}</p>
+      <h2>{title}</h2>
+      <p>Price: ${price.toFixed(2)}</p>
 
-          <div>
-            <label>
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="applePay"
-                checked={paymentMethod === 'applePay'}
-                onChange={() => setPaymentMethod('applePay')}
-              />
-              Apple Pay
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="creditCard"
-                checked={paymentMethod === 'creditCard'}
-                onChange={() => setPaymentMethod('creditCard')}
-              />
-              Credit Card
-            </label>
-          </div>
+      <div>
+        <label>
+          <input
+            type="radio"
+            name="paymentMethod"
+            value="applePay"
+            checked={paymentMethod === 'applePay'}
+            onChange={() => setPaymentMethod('applePay')}
+          />
+          Apple Pay
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="paymentMethod"
+            value="creditCard"
+            checked={paymentMethod === 'creditCard'}
+            onChange={() => setPaymentMethod('creditCard')}
+          />
+          Credit Card
+        </label>
+      </div>
 
-          <button onClick={handlePayment}>Pay</button>
-        </div>
+      <button onClick={handlePayment}>Pay</button>
+    </div>
   );
 };
 

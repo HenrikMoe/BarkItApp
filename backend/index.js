@@ -1091,13 +1091,13 @@ app.post('/verifyUser', async (req, res) => {
 });
 
 
-router.post('/charge', async (req, res) => {
+app.post('/charge', async (req, res) => {
   try {
-    const { token, amount } = req.body;
+    const { token, amount, username, interactingUsername } = req.body;
 
     // Perform the charge using the Stripe API (server-side)
     // Ensure you have set up your Stripe secret key on your server
-    const stripe = require('stripe')('your_stripe_secret_key');
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
     const charge = await stripe.charges.create({
       source: token.id,
@@ -1106,10 +1106,108 @@ router.post('/charge', async (req, res) => {
       description: 'Payment for a product',
     });
 
+
     // Handle successful charge or errors
-    res.status(200).json({ message: 'Payment successful', charge });
+    if (charge.status === 'succeeded') {
+      // Update interacting user's balance and add transaction to history in MongoDB
+      await client.connect();
+      const db = client.db('barkit');
+      const interactingUser = await db.collection('users').findOne({ username: interactingUsername });
+
+      if (interactingUser) {
+        // Calculate new balance
+        const newBalance = interactingUser.balance + amount;
+
+        // Create a transaction object
+        const transaction = {
+          timestamp: new Date().toISOString(),
+          amount: amount,
+          description: 'Payment for a product',
+          status: 'succeeded',
+        };
+
+        // Update the balance and add the transaction to the history in the database
+        await db.collection('users').updateOne(
+          { username: interactingUsername },
+          {
+            $set: { balance: newBalance },
+            $push: { transactions: transaction },
+          }
+        );
+      } else {
+        console.error('Interacting user not found in the database.');
+      }
+
+      res.status(200).json({ message: 'Payment successful', charge });
+    } else {
+      res.status(500).json({ message: 'Payment failed', charge });
+    }
   } catch (error) {
     console.error('Error processing payment:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  } finally {
+    await client.close();
+  }
+});
+
+// Route to get the user's balance
+app.get('/getBalance/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    // Retrieve the user's balance from the database
+    const user = await client.db('barkit').collection('users').findOne({ username });
+
+    if (user) {
+      const { balance } = user;
+      res.status(200).json({ balance });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching balance:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+app.post('/withdraw', async (req, res) => {
+  try {
+    const { amount, username } = req.body;
+
+    // Retrieve the user's balance from the database
+    const user = await client.db.collection('users').findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const { balance } = user;
+
+    // Ensure the user has sufficient funds
+    if (amount <= balance) {
+      // Initiate withdrawal via Stripe API
+      const payout = await stripe.payouts.create({
+        amount: amount * 100, // Convert to cents
+        currency: 'usd',
+        method: 'instant', // or 'standard' based on your needs
+      });
+
+      // Update user's balance and transaction history in the database
+      await client.db.collection('users').updateOne(
+        { username },
+        {
+          $set: { balance: balance - amount },
+          $push: { transactions: { type: 'withdrawal', amount, timestamp: new Date() } },
+        }
+      );
+
+      res.status(200).json({ message: 'Withdrawal initiated successfully', payout });
+    } else {
+      res.status(400).json({ message: 'Insufficient funds' });
+    }
+  } catch (error) {
+    console.error('Error initiating withdrawal:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
