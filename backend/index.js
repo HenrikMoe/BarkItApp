@@ -1106,7 +1106,6 @@ app.post('/charge', async (req, res) => {
       description: 'Payment for a product',
     });
 
-
     // Handle successful charge or errors
     if (charge.status === 'succeeded') {
       // Update interacting user's balance and add transaction to history in MongoDB
