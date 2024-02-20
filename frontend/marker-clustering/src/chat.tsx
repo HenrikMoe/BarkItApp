@@ -49,8 +49,6 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username, openUser }) => {
     setParkChatMessages((prevMessages) => [...prevMessages, message]);
   };
 
-
-
   const sendMessage = async () => {
     if (newMessage.trim() !== '') {
       receiveMessage({ user: selectedDMUser, message: newMessage, timestamp: new Date().toISOString() });
@@ -339,7 +337,7 @@ useEffect(() => {
         </ul>
       </>
     )}
-    
+
   </div>
 )}
           </div>}
