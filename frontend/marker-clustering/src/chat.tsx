@@ -53,6 +53,7 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username, openUser }) => {
     if (newMessage.trim() !== '') {
       receiveMessage({ user: selectedDMUser, message: newMessage, timestamp: new Date().toISOString() });
 
+
       try {
         const targetEndpoint = activeTab === 'park' ? `sendmessage/${dogParkName}` : `dms/${username}`;
         await fetch(`http://localhost:3029/${targetEndpoint}`, {
