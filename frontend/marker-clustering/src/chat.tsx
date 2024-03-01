@@ -54,7 +54,7 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username, openUser }) => {
       receiveMessage({ user: selectedDMUser, message: newMessage, timestamp: new Date().toISOString() });
 
       try {
-        
+
         const targetEndpoint = activeTab === 'park' ? `sendmessage/${dogParkName}` : `dms/${username}`;
         await fetch(`http://localhost:3029/${targetEndpoint}`, {
           method: 'POST',
@@ -85,6 +85,7 @@ const [loadingChat, setLoadingChat] = useState(true)
           if(activeTab === 'park'){
             setParkChatMessages(data.messages);
           }else{
+            
             console.log(selectedDMUser)
             console.log(data.messages)
             setDMChatMessages(data.messages.filter(message => message.user === selectedDMUser));
