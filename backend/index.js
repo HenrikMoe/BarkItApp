@@ -743,14 +743,14 @@ app.post('/forgotpassword', async (req, res) => {
   app.post('/sendmessage/:dogParkName', async (req, res) => {
     try {
       const { dogParkName } = req.params;
-      const { user, message } = req.body;
+      const { self, message } = req.body;
 
       const timestamp = new Date().toISOString();
 
       // Insert the new message with timestamp into the 'dogParkChats' collection
       await client.db('barkit').collection('dogParkChats').updateOne(
         { dogParkName },
-        { $push: { messages: { user, message, timestamp } } },
+        { $push: { messages: { self, message, timestamp } } },
         { upsert: true } // Create the document if it doesn't exist
       );
 
@@ -949,17 +949,21 @@ app.post('/dms/:username', async (req, res) => {
     const { user, message } = req.body;
     const timestamp = new Date().toISOString();
 
+    console.log(username)
     // Insert the new message with timestamp into the sender's 'directMessages' collection
     await client.db('barkit').collection('directMessages').updateOne(
       { username },
-      { $push: { messages: { user, message, timestamp } } },
+      { $push: { messages: { username, message, timestamp } } },
       { upsert: true } // Create the document if it doesn't exist
     );
+
+    console.log('recieivng user')
+    console.log(user)
 
     // Update the receiver's DM list by inserting the sender's username
     await client.db('barkit').collection('directMessages').updateOne(
       { username: user },
-      { $push: { messages: { user: username, message, timestamp } } },
+      { $push: { messages: { username, message, timestamp } } },
       { upsert: true } // Create the document if it doesn't exist
     );
 

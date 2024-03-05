@@ -61,7 +61,7 @@ const Chat: React.FC<ChatProps> = ({ dogParkName, username, openUser }) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ user: selectedDMUser, message: newMessage }),
+          body: JSON.stringify({ self: username, user: selectedDMUser, message: newMessage }),
         });
       } catch (error) {
         console.error('Error sending message:', error);
@@ -85,10 +85,13 @@ const [loadingChat, setLoadingChat] = useState(true)
           if(activeTab === 'park'){
             setParkChatMessages(data.messages);
           }else{
-            
+
             console.log(selectedDMUser)
             console.log(data.messages)
-            setDMChatMessages(data.messages.filter(message => message.user === selectedDMUser));
+            console.log(selectedDMUser)
+            console.log(username)
+            setDMChatMessages(data.messages.filter(message => message.username === selectedDMUser || message.username === username));
+
           }
         } else {
           console.error('Failed to fetch chat:', response.statusText);
@@ -104,6 +107,8 @@ const [loadingChat, setLoadingChat] = useState(true)
 
     return () => clearInterval(chatRequestInterval);
   }, [dogParkName, username, activeTab, selectedDMUser]);
+
+console.log(dmChatMessages)
 
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -267,7 +272,7 @@ useEffect(() => {
             <div ref={chatRef} style={{ height: '200px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px' }}>
               {parkChatMessages.map((message, index) => (
                 <div key={index}>
-                  <strong onClick={() => handleUserSelected(message.user)}>{message.user}:</strong> {message.message}
+                  <strong onClick={() => handleUserSelected(message.user)}>{message.self===username ? 'You' : message.self}:</strong> {message.message}
                   <div style={{ fontSize: '10px', color: '#888' }}>{new Date(message.timestamp).toLocaleString()}</div>
                 </div>
               ))}
@@ -294,7 +299,7 @@ useEffect(() => {
         <div ref={chatRef} style={{ height: '100px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px' }}>
           {dmChatMessages.map((message, index) => (
             <div key={index}>
-              <strong>{message.user}:</strong> {message.message}
+              <strong>{message.username===username ? 'You' : message.username}:</strong> {message.message}
               <div style={{ fontSize: '10px', color: '#888' }}>{new Date(message.timestamp).toLocaleString()}</div>
             </div>
           ))}
