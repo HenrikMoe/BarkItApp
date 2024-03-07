@@ -271,6 +271,7 @@ useEffect(() => {
             <h3>Park Chat Messages {dogParkName}</h3>
             <div ref={chatRef} style={{ height: '200px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px' }}>
               {parkChatMessages.map((message, index) => (
+                
                 <div key={index}>
                   <strong onClick={() => handleUserSelected(message.user)}>{message.self===username ? 'You' : message.self}:</strong> {message.message}
                   <div style={{ fontSize: '10px', color: '#888' }}>{new Date(message.timestamp).toLocaleString()}</div>
